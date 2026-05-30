@@ -6,7 +6,8 @@ import multer from "multer"
 import bcrypt from "bcrypt"
 import crypto from "crypto"
 import axios from "axios"
-
+import path from 'path'
+import { fileURLToPath } from "url";
 import 'dotenv/config';
 
 const app = express();
@@ -959,6 +960,15 @@ app.post('/api/notifications', async (req, res) => {
   }
 })
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on ${API_BASE_URL}`);
