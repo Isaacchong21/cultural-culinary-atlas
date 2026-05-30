@@ -57,7 +57,6 @@
 
       <v-spacer></v-spacer>
 
-      <!-- ✅ 移动端搜索切换按钮：仅 user 角色显示 -->
       <v-btn 
         v-if="userRole === 'user'"
         icon="mdi-magnify" 
@@ -67,7 +66,6 @@
         aria-label="Toggle mobile search"
       ></v-btn>
 
-      <!-- 通知铃铛 (User Only) -->
       <v-badge
         v-if="isAuthenticated && userRole === 'user'"
         :content="$vuetify.display.mdAndUp ? unreadCount : null"
