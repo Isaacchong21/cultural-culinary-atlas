@@ -1,0 +1,46 @@
+{
+  "name": "project",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write --experimental-cli src/",
+    "server": "node server.js",
+    "start": "concurrently \"npm run dev\" \"npm run server\""
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
+    "@mdi/font": "^7.4.47",
+    "axios": "^1.16.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "echarts": "^6.0.0",
+    "express": "^5.2.1",
+    "leaflet": "^1.9.4",
+    "mongodb": "^7.2.0",
+    "mongoose": "^9.6.2",
+    "multer": "^2.1.1",
+    "node-fetch": "^3.3.2",
+    "pinia": "^3.0.4",
+    "sharp": "^0.34.5",
+    "vue": "^3.5.31",
+    "vue-echarts": "^8.0.1",
+    "vue-router": "^5.0.4",
+    "vuedraggable": "^4.1.0",
+    "vuetify": "^4.0.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.5",
+    "concurrently": "^9.2.1",
+    "prettier": "3.8.1",
+    "vite": "^8.0.3",
+    "vite-plugin-vue-devtools": "^8.1.1"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}
