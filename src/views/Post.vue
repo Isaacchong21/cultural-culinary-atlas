@@ -628,104 +628,118 @@ const submitPost = async () => {
 </script>
 
 <style scoped>
+/* ========== 极简设计：无背景色 ========== */
+
+/* 页面容器：纯白背景 */
 .post-page-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff9f5 0%, #fffefc 50%, #f5f9ff 100%);
   position: relative;
-  overflow-x: hidden;
-}
-.post-page-wrapper::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(255,152,0,0.04) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
 }
 
 :deep(.v-card) {
-  border-radius: 20px !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-:deep(.v-card:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
-}
-
-.author-avatar { position: relative; z-index: 2; }
-.border-thin { border: 2px solid rgba(0,0,0,0.08); }
-
-.modern-input :deep(.v-field) {
   border-radius: 16px !important;
-  border: 2px solid rgba(255, 200, 150, 0.4) !important;
-  background: linear-gradient(135deg, #fff, #fff9f5) !important;
-  transition: all 0.3s ease;
-}
-.modern-input :deep(.v-field:hover) {
-  border-color: rgba(255, 152, 0, 0.6) !important;
-  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.1) !important;
-}
-.modern-input :deep(.v-field--focused) {
-  border-color: #ff5722 !important;
-  box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.12) !important;
-}
-.modern-input :deep(.v-field__input) { padding: 12px 16px !important; }
-
-.post-btn {
-  border-radius: 14px !important;
-  padding: 0 28px !important;
-  min-width: 100px !important;
-  transition: all 0.2s ease !important;
-  box-shadow: 0 4px 14px rgba(255, 87, 34, 0.3) !important;
-}
-.post-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 8px 24px rgba(255, 87, 34, 0.4) !important;
-}
-.tool-btn {
-  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: none !important;
   transition: all 0.2s ease;
 }
+
+:deep(.v-card:hover) {
+  transform: none;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.author-avatar { 
+  position: relative; 
+  z-index: 2; 
+}
+
+.border-thin { 
+  border: 2px solid rgba(0, 0, 0, 0.08); 
+}
+
+.modern-input :deep(.v-field) {
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease;
+}
+
+.modern-input :deep(.v-field:hover) {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.modern-input :deep(.v-field--focused) {
+  border-color: #ff5722 !important;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.08) !important;
+}
+
+.modern-input :deep(.v-field__input) { 
+  padding: 12px 16px !important; 
+}
+
+.post-btn {
+  border-radius: 12px !important;
+  padding: 0 24px !important;
+  min-width: 100px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+}
+
+.post-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2) !important;
+}
+
+.tool-btn {
+  border-radius: 10px !important;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
 .tool-btn:hover {
-  transform: translateY(-1px);
-  border-color: #ff9800 !important;
+  transform: none;
+  border-color: #ff5722 !important;
   color: #ff5722 !important;
+  background: rgba(255, 87, 34, 0.04) !important;
 }
 
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
+
 .media-item {
   position: relative;
   aspect-ratio: 1 / 1;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(135deg, #f8f9fa, #ffffff);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  background: #f5f5f5;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
 }
+
 .media-item:hover {
-  transform: scale(1.02);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  transform: none;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.media-content { width: 100%; height: 100%; object-fit: cover; }
+
+.media-content { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+
 .media-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.75);
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 3px 8px;
+  border-radius: 16px;
   font-size: 10px;
   font-weight: 600;
   display: flex;
@@ -733,41 +747,76 @@ const submitPost = async () => {
   gap: 3px;
   z-index: 2;
 }
+
 .media-delete-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+  right: 8px;
   z-index: 3;
-  background: rgba(244, 67, 54, 0.95) !important;
+  background: rgba(244, 67, 54, 0.9) !important;
   color: white !important;
   border: 2px solid white;
   border-radius: 50% !important;
-  width: 28px !important;
-  height: 28px !important;
+  width: 26px !important;
+  height: 26px !important;
   transition: all 0.2s ease;
 }
+
 .media-delete-btn:hover {
-  transform: scale(1.15);
-  background: rgba(211, 47, 47, 0.95) !important;
+  transform: scale(1.1);
+  background: rgba(211, 47, 47, 1) !important;
 }
 
+/* 选择器 */
 .modern-select :deep(.v-field) {
-  border-radius: 12px !important;
-  border: 2px solid rgba(255, 200, 150, 0.4) !important;
-  background: white !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: #ffffff !important;
 }
-.modern-select :deep(.v-field--focused) { border-color: #ff5722 !important; }
 
+.modern-select :deep(.v-field--focused) { 
+  border-color: #ff5722 !important; 
+}
+
+/* 响应式 */
 @media (max-width: 600px) {
-  .post-header-card { border-radius: 0 0 20px 20px !important; }
-  .media-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; }
-  .tool-btn { flex: 1; justify-content: center; }
+  .post-header-card { 
+    border-radius: 0 !important; 
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+  }
+  
+  .media-grid { 
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+    gap: 10px; 
+  }
+  
+  .tool-btn { 
+    flex: 1; 
+    justify-content: center; 
+  }
 }
 
+/* 深色模式：纯黑背景 */
 @media (prefers-color-scheme: dark) {
-  .post-page-wrapper { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
-  :deep(.v-card) { background: rgba(30, 30, 46, 0.95) !important; border-color: rgba(255, 255, 255, 0.1); }
-  .modern-input :deep(.v-field) { background: linear-gradient(135deg, #2a2a4a, #1e1e3a) !important; border-color: rgba(255, 152, 0, 0.3) !important; }
-  .media-item { background: linear-gradient(135deg, #2a2a4a, #1e1e3a); }
+  .post-page-wrapper { 
+    background: #0a0a0a; 
+  }
+  
+  :deep(.v-card) { 
+    background: #1a1a1a !important; 
+    border-color: rgba(255, 255, 255, 0.1) !important; 
+  }
+  
+  .modern-input :deep(.v-field) { 
+    background: #1a1a1a !important; 
+    border-color: rgba(255, 255, 255, 0.15) !important; 
+  }
+  
+  .media-item { 
+    background: #1a1a1a; 
+    border-color: rgba(255, 255, 255, 0.1); 
+  }
 }
 </style>

@@ -193,7 +193,6 @@ const getFlagEmoji = (countryName) => {
 <style scoped>
 .explore-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #FFF8F0 0%, #FFFFFF 100%);
 }
 
 .hero-section {

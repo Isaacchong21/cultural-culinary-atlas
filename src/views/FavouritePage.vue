@@ -177,7 +177,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onActivated } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -202,10 +202,14 @@ const sortOptions = [
 const favouriteDishes = computed(() => {
   if (!Array.isArray(allDishes.value)) return [];
   
-  let list = allDishes.value.filter(d => 
+  let list = [...allDishes.value];
+  
+  // 过滤：只保留在 favourites 数组中的菜品
+  list = list.filter(d => 
     favourites.value.some(favId => favId === (d._id || d.id))
   );
   
+  // 排序
   switch (sortBy.value) {
     case "name-asc": list.sort((a, b) => a.name.localeCompare(b.name)); break;
     case "name-desc": list.sort((a, b) => b.name.localeCompare(a.name)); break;
@@ -237,7 +241,6 @@ async function loadUserFavourites() {
   }
 
   try {
-    // ✅ 使用相对路径
     const res = await fetch(`/api/favourites/${userId}`);
     if (res.ok) {
       const data = await res.json();
@@ -249,6 +252,7 @@ async function loadUserFavourites() {
   }
 }
 
+// ✅ 修复后的 toggleFavourite 函数
 async function toggleFavourite(dishId) {
   const userId = localStorage.getItem("userId");
   if (!userId) {
@@ -262,20 +266,42 @@ async function toggleFavourite(dishId) {
   const dish = allDishes.value.find(d => d._id === dishId || d.id === dishId);
   if (!dish) return;
 
-  try {
-    // ✅ 使用相对路径
-    const res = await fetch(`/api/favourites/${userId}`, {
-      method: "POST",
-      headers: { "Content-Type" : "application/json" },
-      body: JSON.stringify({ dish })
-    })
+  // ✅ 判断当前是否已收藏
+  const isFav = favourites.value.includes(dishId);
 
-    if (res.ok) {
-      const updated = await res.json();
-      favourites.value = updated.dishes.map( d => d._id);
+  try {
+    let res;
+    if (isFav) {
+      // ❌ 已收藏 → 调用 DELETE 接口移除
+      res = await fetch(`/api/favourites/${userId}/${dishId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      if (res.ok) {
+        // ✅ 从本地数组移除
+        favourites.value = favourites.value.filter(id => id !== dishId);
+      }
+    } else {
+      // ✅ 未收藏 → 调用 POST 接口添加
+      res = await fetch(`/api/favourites/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dish })
+      });
+      
+      if (res.ok) {
+        const updated = await res.json();
+        favourites.value = updated.dishes?.map(d => d._id) || [];
+      }
     }
+    
+    if (!res.ok) {
+      throw new Error("Failed to update favourites");
+    }
+    
   } catch (err) {
-    console.error("Failed to toggle favourite:", err)
+    console.error("Failed to toggle favourite:", err);
     alert("Failed to update favourites");
   }
 }
@@ -283,7 +309,6 @@ async function toggleFavourite(dishId) {
 onMounted(async () => {
   loading.value = true;
   try {
-    // ✅ 使用相对路径
     const res = await fetch("/api/recipes");
     const data = await res.json();
     allDishes.value = Array.isArray(data) ? data.map(d => ({ ...d, id: d.id || d._id })) : [];
@@ -292,7 +317,6 @@ onMounted(async () => {
     const imagePromises = allDishes.value.map(async (dish, index) => {
       if (!dish.image) {
         try {
-          // ✅ 使用相对路径
           const imgRes = await fetch(`/api/dish-image?dish=${encodeURIComponent(dish.name)}&country=${encodeURIComponent(dish.country)}`);
           const imgData = await imgRes.json();
           allDishes.value[index].image = imgData.image || "/images/default-dish.jpg";
@@ -303,7 +327,6 @@ onMounted(async () => {
     });
     
     await Promise.allSettled(imagePromises);
-
     await loadUserFavourites();
 
   } catch (err) {
@@ -313,6 +336,12 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+onActivated(() => {
+  if (!loading.value && allDishes.value.length > 0) {
+    loadUserFavourites();
+  }
+})
 </script>
 
 <script>

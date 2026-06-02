@@ -1105,13 +1105,16 @@ async function loadPosts(pageNum = 1) {
     const postsWithStatus = (data.posts || data).map(post => {
       // ✅ 确保 authorId 是字符串（而不是 populate 后的对象）
       let authorIdStr = post.authorId
+      let authorAvatar = post.avatar
       if (typeof post.authorId === 'object' && post.authorId !== null) {
         authorIdStr = post.authorId._id || String(post.authorId)
+        authorAvatar = post.authorId.avatar || post.avatar
       }
       
       return {
         ...post,
-        authorId: authorIdStr,  // ✅ 覆盖为字符串
+        authorId: authorIdStr,
+        authorAvatar: authorAvatar, 
         liked: post.likedBy?.some(id => String(id) === String(currentUserId)) || false,
         saved: post.savedBy?.some(id => String(id) === String(currentUserId)) || false
       }
@@ -1155,6 +1158,12 @@ function handleScroll() {
 }
 
 onMounted(async () => {
+
+  const freshAvatar = localStorage.getItem('userAvatar')
+  if (freshAvatar && freshAvatar !== 'null' && freshAvatar.trim()) {
+    userAvatar.value = freshAvatar
+  }
+
   await loadPosts(1)
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('keydown', handlePreviewKeydown)

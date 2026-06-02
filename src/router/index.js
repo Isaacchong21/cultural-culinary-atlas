@@ -21,7 +21,7 @@ import ForgotPassword from '../views/ForgotPassword.vue'
 import ResetPassword from '../views/ResetPassword.vue'
 import TripDetail from '../views/TripDetail.vue'
 import PostDetail from '../views/PostDetail.vue'
-
+import AIChef from '../views/AIChef.vue'
 const routes = [
   {
     path: '/',
@@ -35,6 +35,7 @@ const routes = [
       { path: 'trips', component: TripList },
       { path: 'trips/:id', component: TripDetail},
       { path: 'community', component: Community },
+      { path: 'ai-chef', component: AIChef },
       { path: 'post', component: Post},
       { 
         path: 'post/:id',  // ✅ 相对路径，正确
@@ -72,7 +73,6 @@ const router = createRouter({
   routes,
 })
 
-// ✅ 修复：使用新语法（返回路由值，而不是调用 next()）
 router.beforeEach((to, from) => {
   const isAuthenticated = localStorage.getItem('userId')
   const userRole = localStorage.getItem('userRole')
@@ -81,7 +81,7 @@ router.beforeEach((to, from) => {
 
   if (requiresAuth.some(path => to.path.startsWith(path))) {
     if (!isAuthenticated) {
-      return '/login'  // ✅ 直接返回路由路径
+      return '/login'
     }
   }
 
@@ -93,8 +93,6 @@ router.beforeEach((to, from) => {
       return '/community'
     }
   }
-
-  // ✅ 不需要调用 next()，默认继续导航
 })
 
 export default router

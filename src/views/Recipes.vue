@@ -314,7 +314,9 @@ const groupedDishes = computed(() => {
 });
 
 function isFavourite(dishId) {
-  return Array.isArray(favouriteIds.value) && favouriteIds.value.includes(dishId);
+  if (!Array.isArray(favouriteIds.value)) return false;
+  const dishIdStr = String(dishId);
+  return favouriteIds.value.some(id => String(id) === dishIdStr);
 }
 
 function goToDetail(id) {
@@ -328,19 +330,39 @@ async function toggleFavourite(dishId) {
     return;
   }
   
-  const dish = allDishes.value.find(d => d._id === dishId || d.id === dishId);
+  const dish = allDishes.value.find(d => {
+    const dId = d._id || d.id;
+    return String(dId) === String(dishId);
+  });
   if (!dish) return;
   
   const isFav = isFavourite(dishId);
+  const dishIdStr = String(dishId);
   
   try {
-    await userDataService.toggleFavourite(userId, dish);
     if (isFav) {
-      favouriteIds.value = favouriteIds.value.filter(id => id !== dishId);
+      const res = await fetch(`/api/favourites/${userId}/${dishId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      if (res.ok) {
+        favouriteIds.value = favouriteIds.value.filter(id => String(id) !== dishIdStr);
+        localStorage.setItem("favouriteIds", JSON.stringify(favouriteIds.value));
+      }
     } else {
-      favouriteIds.value.push(dishId);
+      const res = await fetch(`/api/favourites/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dish })
+      });
+      
+      if (res.ok) {
+        const updated = await res.json();
+        favouriteIds.value = (updated.dishes?.map(d => String(d._id)) || []).filter(Boolean);
+        localStorage.setItem("favouriteIds", JSON.stringify(favouriteIds.value));
+      }
     }
-    localStorage.setItem("favouriteIds", JSON.stringify(favouriteIds.value));
   } catch (err) {
     console.error("Failed to toggle favourite", err);
     alert("Failed to save, please try again.");
@@ -441,8 +463,8 @@ onMounted(async () => {
         expandedPanels.value = [matchedCountry];
       }
     } else if (countries.value.length > 0) {
-      expandedCountries.value = [countries.value[0]];
-      expandedPanels.value = [countries.value[0]];
+      expandedCountries.value = [...countries.value];
+      expandedPanels.value = [...countries.value];
     }
   } catch (err) {
     console.error("Failed to load recipes:", err);

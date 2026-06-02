@@ -9,7 +9,6 @@
       aria-label="Main Navigation"
       class="app-bar-custom"
     >
-      <!-- 汉堡菜单按钮 -->
       <v-btn 
         icon="mdi-menu" 
         variant="text" 
@@ -18,11 +17,10 @@
         aria-label="Toggle navigation menu"
       ></v-btn>
 
-      <!-- ✅ Logo：移动端缩小 -->
       <v-btn to="/" variant="text" class="pa-0 ml-1 ml-md-3 mt-1 logo-btn" style="min-width: auto;" aria-label="Go to Homepage">
         <v-img
           :src="Logo"
-          alt="Food Voyage Logo"
+          alt="Cultural Culinary Atlas Logo"
           :height="$vuetify.display.mdAndUp ? 90 : 60"
           :width="$vuetify.display.mdAndUp ? 120 : 80"
           contain
@@ -31,7 +29,6 @@
 
       <v-divider vertical inset class="mx-1 mx-md-2 d-none d-md-flex" opacity="0.1"></v-divider>
 
-      <!-- 搜索栏（仅 user 角色） -->
       <v-expand-transition v-if="userRole === 'user'">
         <div class="w-100 mx-2 mx-md-4" v-show="$vuetify.display.mdAndUp || !isSearchMobileHidden">
           <v-text-field
@@ -170,11 +167,9 @@
         </v-menu>
       </v-badge>
 
-      <!-- Auth Buttons / User Menu -->
       <template v-if="!isAuthenticated">
         <v-btn variant="text" color="grey-darken-2" to="/login" class="text-none font-weight-medium d-none d-md-inline" aria-label="Log in">Log in</v-btn>
         <v-btn variant="flat" color="orange-darken-4" to="/register" class="text-none font-weight-bold ml-1 ml-md-2 rounded-lg d-none d-md-inline-flex" aria-label="Sign up">Sign up</v-btn>
-        <!-- 移动端简化登录按钮 -->
         <v-btn v-if="!$vuetify.display.mdAndUp" variant="text" color="orange-darken-4" to="/login" class="text-none font-weight-bold" aria-label="Log in">
           <v-icon start>mdi-login</v-icon> Login
         </v-btn>
@@ -182,12 +177,10 @@
 
       <v-menu v-else offset-y min-width="280">
         <template #activator="{ props }">
-          <!-- ✅ 用户菜单：移动端简化 -->
           <v-btn variant="text" class="pa-0 user-menu-btn" v-bind="props" aria-label="User account menu">
             <v-avatar :size="$vuetify.display.mdAndUp ? 40 : 32" class="ring-border">
               <v-img :src="UserProfile.avatar" alt="User Avatar" cover />
             </v-avatar>
-            <!-- ✅ 用户名和下拉箭头：仅桌面端显示 -->
             <div class="d-none d-md-flex flex-column align-start line-height-1 ml-2">
               <span class="text-caption font-weight-bold text-grey-darken-4">{{ UserProfile.name }}</span>
               <span class="text-overline text-grey-lighten-1">View Profile</span>
@@ -216,7 +209,6 @@
       </v-menu>
     </v-app-bar>
 
-    <!-- 侧边导航栏 -->
     <v-navigation-drawer 
       v-model="drawer" 
       :permanent="$vuetify.display.mdAndUp"
@@ -232,7 +224,6 @@
       </div>
       
       <v-list nav density="comfortable" class="pt-2" role="list">
-
         <template v-if="userRole === 'user'">
           <v-list-subheader class="text-grey-darken-2 font-weight-bold pl-4" role="listitem">DISCOVER</v-list-subheader>
           
@@ -250,13 +241,13 @@
 
           <v-list-subheader class="text-grey-darken-2 font-weight-bold pl-4 mt-4" role="listitem">MY JOURNEY</v-list-subheader>
 
-          <v-list-item to="/favourites" prepend-icon="mdi-heart" title="My Favourites" badge="3" badge-color="primary" role="listitem" @click="handleNavigationClick">
+          <v-list-item to="/favourites" prepend-icon="mdi-heart" title="Favourites" badge="3" badge-color="primary" role="listitem" @click="handleNavigationClick">
              <template #prepend>
               <v-icon icon="mdi-heart" :color="$route.path.includes('/favourites') ? 'orange-darken-4' : 'grey-darken-1'" />
             </template>
           </v-list-item>
 
-          <v-list-item to="/trips" prepend-icon="mdi-map-marker-path" title="My Trip" badge="3" badge-color="primary" role="listitem" @click="handleNavigationClick">
+          <v-list-item to="/trips" prepend-icon="mdi-map-marker-path" title="Trip" badge="3" badge-color="primary" role="listitem" @click="handleNavigationClick">
              <template #prepend>
               <v-icon icon="mdi-map-marker-path" :color="$route.path.includes('/trips') ? 'orange-darken-4' : 'grey-darken-1'" />
             </template>
@@ -268,9 +259,15 @@
             </template>
           </v-list-item>
 
-          <v-list-item to="/post" prepend-icon="mdi-pencil-plus-outline" title="Create Post" role="listitem" @click="handleNavigationClick">
+          <v-list-item to="/post" prepend-icon="mdi-pencil-plus-outline" title="Post" role="listitem" @click="handleNavigationClick">
              <template #prepend>
               <v-icon icon="mdi-pencil-plus-outline" :color="$route.path.includes('/post') ? 'orange-darken-4' : 'grey-darken-1'" />
+            </template>
+          </v-list-item>
+
+          <v-list-item to="/ai-chef" prepend-icon="mdi-chef-hat" title="Chef" role="listitem" @click="handleNavigationClick">
+            <template #prepend>
+              <v-icon icon="mdi-chef-hat" :color="$route.path.includes('/ai-chef') ? 'orange-darken-4' : 'grey-darken-1'" />
             </template>
           </v-list-item>
         </template>
@@ -283,13 +280,11 @@
           <v-list-item to="/admin/recipes" prepend-icon="mdi-food-drumstick" title="Recipes" base-color="red" role="listitem" @click="handleNavigationClick"></v-list-item>
           <v-list-item to="/admin/posts" prepend-icon="mdi-file-document-edit" title="Posts" base-color="red" role="listitem" @click="handleNavigationClick"></v-list-item>
         </template>
-
       </v-list>
     </v-navigation-drawer>
 
-    <!-- 主内容区 -->
-    <v-main class="bg-grey-lighten-5" role="main" aria-label="Main Content Area">
-      <v-container fluid class="pa-0">
+    <v-main class="bg-grey-lighten-5 main-area" role="main" aria-label="Main Content Area">
+      <v-container fluid class="pa-0 content-container">
         <router-view v-slot="{ Component }">
           <keep-alive>
             <component :is="Component" :key="route.fullPath"/>
@@ -298,24 +293,34 @@
       </v-container>
     </v-main>
 
-    <!-- Footer -->
     <v-footer 
+      app
       color="grey-lighten-4" 
-      class="pa-3 border-t-light"
+      class="pa-0 border-t-light"
       height="auto"
       role="contentinfo"
       aria-label="Site Footer"
     >
-      <v-row justify="center" no-gutters>
-        <v-col cols="12" md="10" class="text-center">
-          <span class="text-caption text-grey-darken-1 d-block">
-            <strong class="text-orange-darken-4">Cultural Culinary Atlas</strong> 
-            © {{ new Date().getFullYear() }} • COS30043 Project
-          </span>
-        </v-col>
-      </v-row>
+      <v-container fluid class="py-3">
+        <v-row justify="center" class="text-center" no-gutters>
+          <v-col cols="12" class="mb-2">
+            <div class="d-flex align-center justify-center mb-2">
+              <v-icon icon="mdi-earth" color="orange" size="28" class="mr-2" />
+              <span class="text-h6 font-weight-bold text-orange-darken-4">Cultural Culinary Atlas</span>
+            </div>
+            <p class="text-body-2 text-grey-darken-1 mb-3">
+              Discover authentic recipes from around the world
+            </p>
+          </v-col>
+          <v-col cols="12">
+            <span class="text-caption text-grey-darken-1 d-block">
+              <strong class="text-orange-darken-4">Cultural Culinary Atlas</strong> 
+              © {{ new Date().getFullYear() }} • COS30043 Project
+            </span>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-footer>
-
   </v-app>
 </template>
 
@@ -389,7 +394,7 @@ async function fetchNotifications() {
   try {
     const userId = localStorage.getItem('userId');
     if (!userId) return;
-    const res = await fetch(`http://localhost:5000/api/notifications/${userId}`);
+    const res = await fetch(`/api/notifications/${userId}`);
     if (res.ok) notifications.value = await res.json();
   } catch (err) {
     console.error('Failed to fetch notifications:', err);
@@ -403,7 +408,7 @@ async function markAsRead(notifId) {
   if (notif && !notif.isRead) {
     notif.isRead = true;
     try {
-      await fetch(`http://localhost:5000/api/notifications/${notifId}/read`, { 
+      await fetch(`/api/notifications/${notifId}/read`, { 
         method: 'PUT', headers: { 'Content-Type': 'application/json' } 
       });
     } catch (err) {
@@ -417,7 +422,7 @@ async function markAllAsRead() {
   try {
     const userId = localStorage.getItem('userId');
     if (userId) {
-      await fetch(`http://localhost:5000/api/notifications/${userId}/read-all`, { 
+      await fetch(`/api/notifications/${userId}/read-all`, { 
         method: 'PUT', headers: { 'Content-Type': 'application/json' } 
       });
     }
@@ -489,8 +494,7 @@ function logout() {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
-  
-  // 初始化：桌面端默认展开，移动端默认关闭
+
   if (window.innerWidth < 960) {
     drawer.value = false;
   } else {
@@ -510,22 +514,33 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 粘性页脚布局 */
 :deep(.v-application__wrap) {
-  min-height: 100vh;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+:deep(.v-main) {
+  flex: 1 0 auto !important;
+  min-height: auto !important;
+  height: auto !important;
   display: flex;
   flex-direction: column;
 }
 
-:deep(.v-main) {
-  flex: 1 0 auto;
+:deep(.v-main > .v-container),
+:deep(.v-main .v-container > .v-row) {
+  flex: 0 0 auto !important;
+  min-height: auto !important;
 }
 
 :deep(.v-footer) {
-  flex-shrink: 0;
+  flex: 0 0 auto !important;
+  width: 100%;
+  position: relative !important;
+  z-index: 1; 
 }
 
-/* Glassmorphism Effect */
 .glass-effect {
   background: rgba(255, 255, 255, 0.85) !important;
   backdrop-filter: blur(12px);
@@ -533,7 +548,6 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-/* Custom Search Bar Styling */
 .search-bar-custom :deep(.v-field__input) {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
@@ -542,112 +556,100 @@ onUnmounted(() => {
   box-shadow: none !important;
 }
 
-/* Avatar Ring */
 .ring-border {
   border: 2px solid white;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
 
-.line-height-1 {
-  line-height: 1.2;
+.line-height-1 { 
+  line-height: 1.2; 
 }
 
-/* Active List Item Indicator */
-.v-list-item--active {
-  position: relative;
+.v-list-item--active { 
+  position: relative; 
 }
+
 .v-list-item--active::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 10%;
-  bottom: 10%;
+  left: 0; top: 10%; bottom: 10%;
   width: 4px;
   background-color: rgb(230, 81, 0);
   border-radius: 0 4px 4px 0;
 }
 
-/* Notification Styles */
 .notification-btn {
   position: relative;
   transition: transform 0.2s ease;
 }
-.notification-btn:hover {
-  transform: scale(1.1);
-}
+.notification-btn:hover { transform: scale(1.1); }
 
 .notification-panel {
   border-radius: 16px !important;
   overflow: hidden;
 }
 
-.unread-bg {
-  background: rgba(255, 152, 0, 0.04) !important;
+.unread-bg { 
+  background: rgba(255, 152, 0, 0.04) !important; 
 }
 
-.border-b {
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+.border-b { 
+  border-bottom: 1px solid rgba(0,0,0,0.06); }
+.border-t-light { 
+  border-top: 1px solid rgba(0,0,0,0.06) !important; 
 }
 
-.border-t-light {
-  border-top: 1px solid rgba(0,0,0,0.06) !important;
+:deep(.v-list)::-webkit-scrollbar { 
+  width: 4px; 
 }
 
-/* Scrollbar */
-:deep(.v-list)::-webkit-scrollbar {
-  width: 4px;
-}
-:deep(.v-list)::-webkit-scrollbar-track {
-  background: transparent;
-}
-:deep(.v-list)::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
-  border-radius: 4px;
+:deep(.v-list)::-webkit-scrollbar-track { 
+  background: transparent; 
 }
 
-/* 键盘导航焦点可见性 */
+:deep(.v-list)::-webkit-scrollbar-thumb { 
+  background: rgba(0,0,0,0.2); border-radius: 4px; 
+}
+
 .v-btn:focus-visible, .v-list-item:focus-visible {
   outline: 2px solid #ff5722 !important;
   outline-offset: 2px !important;
 }
 
-/* ✅ 移动端紧凑布局优化 */
 @media (max-width: 600px) {
-  .app-bar-custom {
-    padding: 0 4px !important;
+  .app-bar-custom { 
+    padding: 0 4px !important; 
   }
-  
-  .logo-btn {
-    margin-left: 2px !important;
+
+  .logo-btn { 
+    margin-left: 2px !important; 
   }
-  
-  .notification-btn {
-    margin-right: 2px !important;
+
+  .notification-btn { 
+    margin-right: 2px !important; 
   }
-  
-  .user-menu-btn {
-    margin-right: 2px !important;
+
+  .user-menu-btn { 
+    margin-right: 2px !important; 
   }
-  
-  /* 隐藏桌面端专属元素 */
-  .d-xs-none {
-    display: none !important;
+
+  .d-xs-none { 
+    display: none !important; 
   }
 }
 
-/* ✅ 超小屏幕优化 (<360px) */
 @media (max-width: 360px) {
-  .v-app-bar {
-    height: 60px !important;
+  .v-app-bar { 
+    height: 60px !important; 
   }
-  
-  .logo-btn :deep(img) {
-    height: 50px !important;
-    width: 65px !important;
+
+  .logo-btn :deep(img) { 
+    height: 50px !important; 
+    width: 65px !important; 
   }
-  
-  .v-footer .text-caption {
-    font-size: 0.7rem !important;
+
+  .v-footer .text-caption { 
+    font-size: 0.7rem !important; 
   }
 }
 </style>

@@ -9,6 +9,8 @@ import axios from "axios"
 import path from 'path'
 import { fileURLToPath } from "url";
 import 'dotenv/config';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import fs from "fs";
 
 const app = express();
 
@@ -978,6 +980,77 @@ if (process.env.NODE_ENV === 'production') {
     }
   });
 }
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+app.post("/api/ai-chef", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No image uploaded" });
+
+    // 1. 图片转 Base64
+    const imageBuffer = fs.readFileSync(req.file.path);
+    const base64Image = imageBuffer.toString("base64");
+
+    // 2. 调用 Gemini 识别食材
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const prompt = `Identify food ingredients in this image. Return ONLY a JSON array of strings. Example: ["tomato", "egg", "noodles"]. No extra text.`;
+    
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { mimeType: req.file.mimetype, data: base64Image } }
+    ]);
+    const response = await result.response;
+    let ingredients = [];
+    try {
+      ingredients = JSON.parse(response.text().replace(/```json\n?|```\n?/g, "").trim());
+    } catch (e) {
+      ingredients = response.text().match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, "")) || [];
+    }
+
+    if (ingredients.length === 0) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: "Could not identify ingredients" });
+    }
+
+    // 3. 优先查询数据库
+    const regexConditions = ingredients.map(ing => ({
+      "ingredients.item": { $regex: ing, $options: "i" }
+    }));
+
+    let dbRecipes = await Recipe.find({ $or: regexConditions })
+      .limit(3)
+      .select("name country image description ingredients");
+
+    if (dbRecipes.length > 0) {
+      fs.unlinkSync(req.file.path);
+      return res.json({ 
+        ingredients, 
+        recipes: dbRecipes.map(r => ({ ...r.toObject(), isAI: false })) 
+      });
+    }
+
+    // 4. 数据库无匹配 → AI 现场生成兜底
+    const fallbackPrompt = `You are a professional chef. User has: [${ingredients.join(', ')}].
+Generate 2 practical recipes. STRICTLY return ONLY a JSON array:
+[{"name":"Recipe","description":"Short desc","ingredients":["a","b"],"steps":["s1","s2"]}]`;
+
+    const genResult = await model.generateContent(fallbackPrompt);
+    const genResponse = await genResult.response;
+    let aiRecipes = [];
+    try {
+      aiRecipes = JSON.parse(genResponse.text().replace(/```json\n?|```\n?/g, "").trim());
+    } catch (e) {
+      console.error("AI Gen Parse Error:", genResponse.text());
+    }
+
+    fs.unlinkSync(req.file.path);
+    res.json({ ingredients, recipes: aiRecipes.map(r => ({ ...r, isAI: true })) });
+  } catch (err) {
+    console.error("AI Chef Error:", err);
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: "AI processing failed" });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on ${API_BASE_URL}`);
