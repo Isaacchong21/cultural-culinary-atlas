@@ -636,6 +636,8 @@ const posts = ref([])
 const editDialog = ref(false)
 const newAvatarFile = ref(null)
 const isFollowing = ref(false)
+const profileForm = ref(null) 
+
 
 function hideEmail(email) {
   if(!email) return ''

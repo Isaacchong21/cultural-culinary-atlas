@@ -11,7 +11,12 @@ import { fileURLToPath } from "url";
 import 'dotenv/config';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
+const cloudinaryFull = require('cloudinary'); 
+const cloudinary = cloudinaryFull.v2; 
+const CloudinaryStorage = require('multer-storage-cloudinary');
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -277,9 +282,6 @@ app.delete("/api/favourites/:userId/:dishId", async (req, res) => {
   }
 })
 
-app.use("/uploads", express.static("uploads"))
-
-
 app.post("/api/posts", async (req, res) => {
   try {
     const newPost = new Post(req.body);
@@ -511,16 +513,17 @@ app.put("/api/posts/:id", async (req, res) => {
   }
 });
 
-const upload = multer({ dest: "uploads/"})
-const mediaStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + '-' + file.originalname;
-    cb(null, uniqueName);
-  }
-})
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinaryFull,
+  params: {
+    folder: 'culinary-atlas',
+    allowed_formats: ['jpeg', 'jpg', 'png', 'gif', 'mp4', 'webm'],
+    resource_type: 'auto'
+  },
+});
+
 const uploadMedia = multer({
-  storage: mediaStorage,
+  storage: cloudinaryStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|mp4|webm/;
@@ -529,7 +532,13 @@ const uploadMedia = multer({
     if (ext && mime) cb(null, true);
     else cb(new Error('Only images/videos allowed'));
   }
-})
+});
+
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinaryFull,
+  params: { folder: 'avatars', allowed_formats: ['jpg', 'png', 'jpeg'] }
+});
+const uploadAvatar = multer({ storage: avatarStorage });
 
 app.post("/api/upload", uploadMedia.array("file", 10), (req, res) => {
   console.log('DEBUG: /api/upload received ===')
@@ -541,7 +550,7 @@ app.post("/api/upload", uploadMedia.array("file", 10), (req, res) => {
     }
 
     const uploadedFiles = req.files.map(file => ({
-      url: `${API_BASE_URL}/uploads/${file.filename}`,
+      url: file.path || file.secure_url, 
       filename: file.filename,
       mimetype: file.mimetype,
       size: file.size
@@ -556,7 +565,6 @@ app.post("/api/upload", uploadMedia.array("file", 10), (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
-
 
 app.post("/api/init-admin", async (req, res) => {
   try {
@@ -732,7 +740,7 @@ app.get("/api/user/profile/:id", async (req, res) => {
   }
 })
 
-app.put("/api/user/profile/:id", upload.single("avatar"), async (req, res) => {
+app.put("/api/user/profile/:id", uploadAvatar.single("avatar"), async (req, res) => {
   try {
     const targetUserId = req.params.id;
     const requestUserId = req.headers['x-user-id'];
@@ -743,9 +751,8 @@ app.put("/api/user/profile/:id", upload.single("avatar"), async (req, res) => {
     const updateData = { name: req.body.name, email: req.body.email, location: req.body.location }
 
     if (req.file) {
-      updateData.avatar = `${API_BASE_URL}/uploads/${req.file.filename}`
+      updateData.avatar = req.file.path || req.file.secure_url
     }
-
     const updatedUser = await User.findByIdAndUpdate(targetUserId, updateData, { returnDocument: 'after'}).select('-password');
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
     res.json(updatedUser);
@@ -753,6 +760,7 @@ app.put("/api/user/profile/:id", upload.single("avatar"), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 })
+
 
 const heroLandmarks = {
   Malaysia: "Petronas Twin Towers",
@@ -1043,15 +1051,16 @@ if (process.env.NODE_ENV === 'production') {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post("/api/ai-chef", upload.single("image"), async (req, res) => {
+
+app.post("/api/ai-chef", uploadMedia.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No image uploaded" });
 
-    // 1. 图片转 Base64
-    const imageBuffer = fs.readFileSync(req.file.path);
+    const imageUrl = req.file.path || req.file.secure_url;
+    const response = await fetch(imageUrl); 
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
     const base64Image = imageBuffer.toString("base64");
 
-    // 2. 调用 Gemini 识别食材
     const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
     const prompt = `Identify food ingredients in this image. Return ONLY a JSON array of strings. Example: ["tomato", "egg", "noodles"]. No extra text.`;
     
@@ -1059,20 +1068,18 @@ app.post("/api/ai-chef", upload.single("image"), async (req, res) => {
       prompt,
       { inlineData: { mimeType: req.file.mimetype, data: base64Image } }
     ]);
-    const response = await result.response;
+    const responseText = await result.response;
     let ingredients = [];
     try {
-      ingredients = JSON.parse(response.text().replace(/```json\n?|```\n?/g, "").trim());
+      ingredients = JSON.parse(responseText.text().replace(/```json\n?|```\n?/g, "").trim());
     } catch (e) {
-      ingredients = response.text().match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, "")) || [];
+      ingredients = responseText.text().match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, "")) || [];
     }
 
     if (ingredients.length === 0) {
-      fs.unlinkSync(req.file.path);
       return res.status(400).json({ error: "Could not identify ingredients" });
     }
 
-    // 3. 优先查询数据库
     const regexConditions = ingredients.map(ing => ({
       "ingredients.item": { $regex: ing, $options: "i" }
     }));
@@ -1082,14 +1089,12 @@ app.post("/api/ai-chef", upload.single("image"), async (req, res) => {
       .select("name country image description ingredients");
 
     if (dbRecipes.length > 0) {
-      fs.unlinkSync(req.file.path);
       return res.json({ 
         ingredients, 
         recipes: dbRecipes.map(r => ({ ...r.toObject(), isAI: false })) 
       });
     }
 
-    // 4. 数据库无匹配 → AI 现场生成兜底
     const fallbackPrompt = `You are a professional chef. User has: [${ingredients.join(', ')}].
 Generate 2 practical recipes. STRICTLY return ONLY a JSON array:
 [{"name":"Recipe","description":"Short desc","ingredients":["a","b"],"steps":["s1","s2"]}]`;
@@ -1103,11 +1108,9 @@ Generate 2 practical recipes. STRICTLY return ONLY a JSON array:
       console.error("AI Gen Parse Error:", genResponse.text());
     }
 
-    fs.unlinkSync(req.file.path);
     res.json({ ingredients, recipes: aiRecipes.map(r => ({ ...r, isAI: true })) });
   } catch (err) {
     console.error("AI Chef Error:", err);
-    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     res.status(500).json({ error: "AI processing failed" });
   }
 });
