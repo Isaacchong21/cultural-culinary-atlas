@@ -824,19 +824,25 @@ app.get("/api/hero-image", async (req, res) => {
       let bestScore = Infinity;
       let bestPosition = "center center";
       for (const photo of data.results) {
-        const photoUrl = photo.urls.full;
+        const photoUrl = photo.urls.regular;
         const buffer = await fetch(photoUrl).then((r) => r.arrayBuffer());
-        const stats = await sharp(Buffer.from(buffer)).stats();
-        const avgBrightness = stats.channels[0].mean + stats.channels[1].mean + stats.channels[2].mean;
-        let position = "center center";
-        if (avgBrightness < 100) position = "center bottom";
-        else if (avgBrightness > 180) position = "center top";
-        const score = Math.abs(avgBrightness - 140);
-        if (score < bestScore) {
-          bestScore = score;
-          bestPhoto = photo.urls.regular; 
-          bestPosition = position;
+
+        try {
+          const stats = await sharp(Buffer.from(buffer)).stats();
+          const avgBrightness = stats.channels[0].mean + stats.channels[1].mean + stats.channels[2].mean;
+          let position = "center center";
+          if (avgBrightness < 100) position = "center bottom";
+          else if (avgBrightness > 180) position = "center top";
+          const score = Math.abs(avgBrightness - 140);
+          if (score < bestScore) {
+            bestScore = score;
+            bestPhoto = photo.urls.regular; 
+            bestPosition = position;
+          }
+        } catch (err) {
+          console.warn(`Failed to process image: ${err.message}`);
         }
+        if (global.gc) global.gc();
       }
       res.json({ image: bestPhoto, position: bestPosition });
     } else {
