@@ -457,6 +457,60 @@ app.delete('/api/posts/:id/save', async (req, res) => {
   }
 })
 
+// ✅ 删除帖子接口
+app.delete("/api/posts/:id", async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    
+    // 🚨 权限校验：只能删除自己的帖子
+    if (String(post.authorId) !== String(userId)) {
+      return res.status(403).json({ error: "Forbidden: You can only delete your own posts" });
+    }
+    
+    await Post.findByIdAndDelete(req.params.id);
+    res.json({ message: "Post deleted successfully" });
+  } catch (err) {
+    console.error("Delete post error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/posts/:id", async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    
+    if (String(post.authorId) !== String(userId)) {
+      return res.status(403).json({ error: "Forbidden: You can only edit your own posts" });
+    }
+
+    const { title, content, tags, location, mood, privacy, image, images, videoUrl, mediaType } = req.body;
+    if (title !== undefined) post.title = title;
+    if (content !== undefined) post.content = content;
+    if (tags !== undefined) post.tags = tags;
+    if (location !== undefined) post.location = location;
+    if (mood !== undefined) post.mood = mood;
+    if (privacy !== undefined) post.privacy = privacy;
+    if (image !== undefined) post.image = image;
+    if (images !== undefined) post.images = images;
+    if (videoUrl !== undefined) post.videoUrl = videoUrl;
+    if (mediaType !== undefined) post.mediaType = mediaType;
+
+    await post.save();
+    res.json(post);
+  } catch (err) {
+    console.error("Update post error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const upload = multer({ dest: "uploads/"})
 const mediaStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),

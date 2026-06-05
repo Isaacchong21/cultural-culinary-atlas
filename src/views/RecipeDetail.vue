@@ -336,8 +336,21 @@ onMounted(async () => {
 });
 
 function goBack() {
-  if (countrySlug.value) router.push(`/country/${countrySlug.value}`);
-  else router.push('/');
+  const from = route.query.from;
+  const country = recipe.value?.country;
+  
+  if (from === 'country' && country) {
+    const slug = country.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/country/${slug}`);
+  } else if (from === 'recipes') {
+    router.push('/recipes');
+  } else if (from === 'favourites') {
+    router.push('/favourites');
+  } else if (from === 'trips') {
+    router.push('/trips');
+  } else {
+    router.back();
+  }
 }
 </script>
 

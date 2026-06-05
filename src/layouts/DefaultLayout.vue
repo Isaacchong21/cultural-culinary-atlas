@@ -168,47 +168,77 @@
       </v-badge>
 
       <template v-if="!isAuthenticated">
-        <v-btn variant="text" color="grey-darken-2" to="/login" class="text-none font-weight-medium d-none d-md-inline" aria-label="Log in">Log in</v-btn>
-        <v-btn variant="flat" color="orange-darken-4" to="/register" class="text-none font-weight-bold ml-1 ml-md-2 rounded-lg d-none d-md-inline-flex" aria-label="Sign up">Sign up</v-btn>
-        <v-btn v-if="!$vuetify.display.mdAndUp" variant="text" color="orange-darken-4" to="/login" class="text-none font-weight-bold" aria-label="Log in">
-          <v-icon start>mdi-login</v-icon> Login
+        <v-btn 
+          variant="text" 
+          color="grey-darken-2" 
+          to="/login" 
+          class="text-none font-weight-medium d-none d-md-inline auth-btn"
+          aria-label="Log in"
+        >
+          Log in
+        </v-btn>
+        <v-btn 
+          variant="flat" 
+          color="orange-darken-4" 
+          to="/register" 
+          class="text-none font-weight-bold ml-1 ml-md-2 rounded-lg d-none d-md-inline-flex auth-btn"
+          aria-label="Sign up"
+        >
+          Sign up
+        </v-btn>
+        
+        <v-btn 
+          v-if="!$vuetify.display.mdAndUp" 
+          variant="text" 
+          color="orange-darken-4" 
+          to="/login" 
+          class="text-none font-weight-medium d-flex align-center auth-btn-mobile"
+          aria-label="Log in"
+        >
+          <v-icon start size="20">mdi-login</v-icon>
+          Login
         </v-btn>
       </template>
 
-      <v-menu v-else offset-y min-width="280">
+      <v-menu v-else offset-y min-width="280" :close-on-content-click="false">
         <template #activator="{ props }">
-          <v-btn variant="text" class="pa-0 user-menu-btn" v-bind="props" aria-label="User account menu">
-            <v-avatar :size="$vuetify.display.mdAndUp ? 40 : 32" class="ring-border">
+          <v-btn variant="text" class="pa-0 user-menu-btn" v-bind="props" aria-label="Open user account menu">
+            <v-avatar :size="$vuetify.display.mdAndUp ? 40 : 32" class="ring-border user-avatar">
               <v-img :src="UserProfile.avatar" alt="User Avatar" cover />
             </v-avatar>
-            <div class="d-none d-md-flex flex-column align-start line-height-1 ml-2">
+            <div class="d-none d-md-flex flex-column align-start line-height-1 ml-2 user-info">
               <span class="text-caption font-weight-bold text-grey-darken-4">{{ UserProfile.name }}</span>
-              <span class="text-overline text-grey-lighten-1">View Profile</span>
+              <span class="text-overline text-grey-darken-1">View Profile</span>
             </div>
-            <v-icon icon="mdi-chevron-down" size="small" class="ml-1 d-none d-md-flex" />
+            <v-icon icon="mdi-chevron-down" size="small" class="ml-1 d-none d-md-flex chevron-icon" />
           </v-btn>
         </template>
 
-        <v-list class="py-2 rounded-lg" elevation="8" role="menu">
-          <v-list-item class="px-4 py-3 bg-grey-lighten-5 rounded-lg mb-2">
-            <v-avatar start size="40">
-              <v-img :src="UserProfile.avatar" cover />
-            </v-avatar>
+        <v-card class="py-2 rounded-xl user-menu-card" elevation="12">
+          <v-list-item class="px-4 py-3 mb-2">
+            <template #prepend>
+              <v-avatar size="40" class="ring-border">
+                <v-img :src="UserProfile.avatar" cover />
+              </v-avatar>
+            </template>
             <v-list-item-title class="font-weight-bold">{{ UserProfile.name }}</v-list-item-title>
             <v-list-item-subtitle class="text-truncate">{{ UserProfile.email }}</v-list-item-subtitle>
           </v-list-item>
-
-          <v-divider class="my-1"></v-divider>
-
-          <v-list-item to="/profile" prepend-icon="mdi-account-outline" title="My Profile" subtitle="Manage account settings" link role="menuitem"></v-list-item>
           
-          <v-divider class="my-1"></v-divider>
-
-          <v-list-item @click="logout" prepend-icon="mdi-logout" title="Logout" base-color="error" role="menuitem"></v-list-item>
-        </v-list>
+          <v-divider class="my-1" />
+          
+          <v-list density="compact" nav>
+            <v-list-item to="/profile" prepend-icon="mdi-account-outline" title="My Profile" link class="rounded-lg mx-2 my-1" />
+          </v-list>
+          
+          <v-divider class="my-1" />
+          
+          <v-list-item @click="logout" prepend-icon="mdi-logout" title="Logout" base-color="error" link class="rounded-lg mx-2 my-1" />
+        </v-card>
       </v-menu>
     </v-app-bar>
 
+    <!-- 侧边导航栏 -->
     <v-navigation-drawer 
       v-model="drawer" 
       :permanent="$vuetify.display.mdAndUp"
@@ -283,6 +313,7 @@
       </v-list>
     </v-navigation-drawer>
 
+    <!-- 主内容区 -->
     <v-main class="bg-grey-lighten-5 main-area" role="main" aria-label="Main Content Area">
       <v-container fluid class="pa-0 content-container">
         <router-view v-slot="{ Component }">
@@ -293,6 +324,7 @@
       </v-container>
     </v-main>
 
+    <!-- Footer -->
     <v-footer 
       app
       color="grey-lighten-4" 
@@ -514,6 +546,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ========== 全局布局 (粘性页脚方案) ========== */
 :deep(.v-application__wrap) {
   min-height: 100vh !important;
   display: flex !important;
@@ -539,6 +572,83 @@ onUnmounted(() => {
   width: 100%;
   position: relative !important;
   z-index: 1; 
+}
+
+/* ========== 用户菜单交互优化 ========== */
+.user-avatar {
+  transition: all 0.2s ease;
+  border: 2px solid white;
+}
+.user-menu-btn:hover .user-avatar {
+  transform: scale(1.05);
+  border-color: #ff9800;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+}
+
+.user-info {
+  transition: color 0.2s ease;
+}
+.user-menu-btn:hover .user-info {
+  color: #ff5722;
+}
+
+.chevron-icon {
+  transition: transform 0.2s ease;
+}
+.user-menu-btn:hover .chevron-icon {
+  transform: rotate(180deg);
+}
+
+.user-menu-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.user-menu-card :deep(.v-list-item) {
+  border-radius: 12px !important;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.user-menu-card :deep(.v-list-item:hover) {
+  background: rgba(255, 152, 0, 0.08) !important;
+  transform: translateX(4px);
+}
+
+.user-menu-card :deep(.v-list-item:first-child) {
+  background: rgba(255, 248, 240, 0.5) !important;
+  border-radius: 12px !important;
+  margin: 0 8px 8px 8px;
+  width: calc(100% - 16px);
+}
+
+.user-menu-card :deep(.v-list-item:last-child) {
+  color: #d32f2f !important;
+}
+.user-menu-card :deep(.v-list-item:last-child:hover) {
+  background: rgba(211, 47, 47, 0.08) !important;
+}
+
+.auth-btn {
+  transition: all 0.2s ease;
+  border-radius: 10px !important;
+}
+.auth-btn:hover {
+  transform: translateY(-1px);
+}
+
+.auth-btn-mobile {
+  padding: 0 12px !important;
+  border-radius: 20px !important;
+  transition: all 0.2s ease;
+}
+.auth-btn-mobile:hover {
+  background: rgba(255, 87, 34, 0.08) !important;
+}
+
+.text-grey-darken-1 {
+  color: #616161 !important;
 }
 
 .glass-effect {

@@ -854,15 +854,122 @@ function openAIRecipe(recipe) {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
 }
 
-.timeline-item { margin-bottom: 16px; }
-:deep(.v-timeline-item__body) { padding-left: 12px !important; }
+.timeline-item { 
+  margin-bottom: 16px; 
+}
 
-@media (max-width: 600px) { 
-  .ai-chef-container { padding: 16px !important; }
-  .upload-placeholder { padding: 40px 20px !important; } 
-  .preview-image { height: 240px !important; }
-  .header-section .text-h3 { font-size: 1.75rem !important; }
-  .analyze-btn, .v-btn { width: 100%; margin-bottom: 8px; }
+:deep(.v-timeline-item__body) { 
+  padding-left: 12px !important; 
+}
+
+@media (max-width: 600px) {
+  .ai-chef-container { 
+    padding: 12px !important; 
+    border-radius: 16px !important;
+  }
+
+  .header-section { 
+    margin-bottom: 24px !important; 
+  }
+
+  .header-section .text-h3 { 
+    font-size: 1.75rem !important; 
+    line-height: 1.2 !important; 
+  }
+
+  .header-icon { 
+    font-size: 36px !important; 
+  }
+
+  .upload-zone { 
+    padding: 16px !important; 
+  }
+
+  .upload-placeholder { 
+    padding: 24px 8px !important; 
+  }
+
+  .upload-placeholder .text-h6 { 
+    font-size: 1.1rem !important; 
+  }
+
+  .main-icon { 
+    font-size: 48px !important; 
+  }
+
+  .plus-icon { 
+    font-size: 20px !important; 
+    width: 24px; 
+    height: 24px; 
+    bottom: -2px; 
+    right: -2px; 
+  }
+
+  .preview-image { 
+    height: 180px !important; 
+    min-width: auto !important; 
+  }
+  
+  .d-flex.justify-center.gap-3.mt-6 {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .analyze-btn, .v-btn.rounded-pill { 
+    width: 100% !important; 
+    margin-bottom: 0 !important; 
+    justify-content: center !important;
+  }
+
+  .loading-header .text-body-1 { 
+    font-size: 0.9rem !important; 
+  }
+
+  .skeleton-image { 
+    height: 160px !important; 
+  }
+
+  .recipe-skeleton .pa-4 { 
+    padding: 12px !important; 
+  }
+
+  .ingredients-alert .text-subtitle-1 { 
+    font-size: 1rem !important; 
+  }
+
+  .ingredient-chip { 
+    font-size: 0.75rem !important; 
+    height: 28px !important; 
+    padding: 0 8px !important;
+  }
+
+  .recipe-card .pa-5 { 
+    padding: 12px !important; 
+  }
+
+  .recipe-card .text-subtitle-1 { 
+    font-size: 0.95rem !important; 
+  }
+
+  .card-hover-overlay .v-btn { 
+    font-size: 0.75rem !important; 
+    padding: 0 8px !important; 
+  }
+
+  .ai-dialog .pa-5 { 
+    padding: 16px !important; 
+  }
+
+  .ai-dialog .v-card-title { 
+    padding: 16px !important; 
+  }
+
+  .ai-dialog .text-h5 { 
+    font-size: 1.25rem !important; 
+  }
+  
+  .timeline-item .pa-3 { 
+    padding: 10px !important; 
+  }
 }
 
 @media (max-width: 960px) and (min-width: 601px) {

@@ -41,7 +41,9 @@
                 <v-text-field
                   v-model="password"
                   :rules="passwordRules"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  append-inner-icon="mdi-eye"
+                  @click:append-inner="showPassword = !showPassword"
                   placeholder="Enter your password"
                   variant="outlined"
                   density="comfortable"
@@ -95,6 +97,9 @@ const loading = ref(false);
 const email = ref('');
 const password = ref('');
 
+// 控制密码显示/隐藏的状态
+const showPassword = ref(false);
+
 const emailRules = [
   v => !!v || 'Email is required',
   v => /.+@.+\..+/.test(v) || 'Email must be valid'
@@ -112,7 +117,6 @@ async function handleLogin() {
     loading.value = true;
 
     try {
-      // ✅ 使用相对路径
       const res = await fetch('/api/login', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -222,6 +226,15 @@ async function handleLogin() {
 .custom-input :deep(.v-field--focused) {
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 小眼睛图标样式 */
+.eye-icon {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.eye-icon:hover {
+  color: #ff5722 !important;
 }
 
 .btn-submit {

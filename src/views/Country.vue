@@ -27,7 +27,7 @@
         </v-col>
       </v-row>
 
-      <!-- 加载状态 -->
+      <!-- 加载状态：保持骨架屏直到数据完全就绪 -->
       <v-row v-if="loading">
         <v-col v-for="i in 6" :key="i" cols="12" sm="6" md="4" lg="3">
           <v-skeleton-loader type="card" height="320" class="rounded-lg" />
@@ -52,13 +52,14 @@
               elevation="2"
               hover
               height="100%"
-              :style="{ animationDelay: `${index * 0.1}s`}"
+              :style="{ animationDelay: `${index * 0.05}s`}"
             >
               <v-img
                 :src="country.image"
                 height="240px"
                 cover
                 class="country-image"
+                eager
               >
                 <template #placeholder>
                   <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
@@ -123,9 +124,50 @@ const searchStore = useSearchStore();
 const countries = ref([]);
 const loading = ref(true);
 
+// ✅ 新增：获取国旗 Emoji 辅助函数
+const getFlagEmoji = (countryName) => {
+  const countryMap = {
+    "China": "🇨🇳", "Japan": "🇯🇵", "Thailand": "🇹🇭",
+    "India": "🇮🇳", "Italy": "🇮🇹", "France": "🇫🇷",
+    "Mexico": "🇲🇽", "USA": "🇺🇸", "Korea": "🇰🇷",
+    "Vietnam": "🇻🇳", "Spain": "🇪🇸", "Greece": "🇬🇷",
+    "Turkey": "🇹", "Brazil": "🇷", "UK": "🇬🇧",
+    "Germany": "🇩🇪", "Australia": "🇦🇺", "Canada": "🇨🇦",
+    "Indonesia": "🇮", "Malaysia": "🇾", "Philippines": "🇵",
+    "Singapore": "🇸🇬", "Nepal": "🇳🇵", "Peru": "🇵🇪",
+    "Lebanon": "🇱🇧", "Morocco": "🇲🇦", "Ethiopia": "🇪",
+    "Nigeria": "🇳🇬", "South Africa": "🇿🇦", "Egypt": "🇪🇬"
+  };
+  return countryMap[countryName] || "🍳";
+};
+
 onMounted(async () => {
+  loading.value = true;
+  
+  // ✅ 优化 1: 尝试从 localStorage 读取缓存，实现秒开
+  const cachedData = localStorage.getItem('countriesCache');
+  if (cachedData) {
+    try {
+      const parsed = JSON.parse(cachedData);
+      // 简单的缓存过期检查（例如 24 小时）
+      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+        countries.value = parsed.data;
+        loading.value = false;
+        // 后台静默刷新数据，用户无感知
+        refreshCountriesData();
+        return;
+      }
+    } catch (e) {
+      console.warn("Failed to parse cache", e);
+    }
+  }
+
+  await refreshCountriesData();
+});
+
+async function refreshCountriesData() {
   try {
-    // ✅ 使用相对路径
+    // ✅ 优化 2: 先快速拉取基础数据（食谱列表），让骨架屏立刻消失
     const res = await fetch('/api/recipes');
     const data = await res.json();
 
@@ -142,26 +184,37 @@ onMounted(async () => {
       map[recipe.country].count++;
     }
 
-    // 加载国家图片
-    for (const country of Object.keys(map)) {
+    const countryList = Object.values(map);
+    
+    // ✅ 关键优化 3: 使用 Promise.allSettled 并行加载所有国家封面图
+    // 原来用 for...await 是串行的，现在 20 个国家同时发请求，总耗时取决于最慢的那一个
+    const imagePromises = countryList.map(async (country) => {
       try {
-        // ✅ 使用相对路径
-        const heroRes = await fetch(`/api/hero-image?country=${country}`);
+        const heroRes = await fetch(`/api/hero-image?country=${encodeURIComponent(country.name)}`);
         const heroData = await heroRes.json();
-        map[country].image = heroData.image || `https://via.placeholder.com/600x400?text=${encodeURIComponent(country)}`;
+        country.image = heroData.image || `https://via.placeholder.com/600x400?text=${encodeURIComponent(country.name)}`;
       } catch (err) {
-        console.error(`Failed to fetch hero image for ${country}`, err);
-        map[country].image = `https://via.placeholder.com/600x400?text=${encodeURIComponent(country)}`;
+        console.error(`Failed to fetch hero image for ${country.name}`, err);
+        country.image = `https://via.placeholder.com/600x400?text=${encodeURIComponent(country.name)}`;
       }
-    }
+    });
 
-    countries.value = Object.values(map);
+    await Promise.allSettled(imagePromises);
+
+    countries.value = countryList;
+    
+    // ✅ 优化 4: 将结果存入缓存
+    localStorage.setItem('countriesCache', JSON.stringify({
+      timestamp: Date.now(),
+      data: countryList
+    }));
+
   } catch (err) {
     console.error("Failed to load countries", err);
   } finally {
     loading.value = false;
   }
-});
+}
 
 const filteredCountries = computed(() => {
   if (!searchStore.term) return countries.value;
@@ -172,22 +225,6 @@ const filteredCountries = computed(() => {
 const totalRecipes = computed(() => 
   countries.value.reduce((sum, c) => sum + c.count, 0)
 );
-
-const getFlagEmoji = (countryName) => {
-  const countryMap = {
-    "China": "🇨🇳", "Japan": "🇯🇵", "Thailand": "🇹🇭",
-    "India": "🇮", "Italy": "🇹", "France": "🇫🇷",
-    "Mexico": "🇲🇽", "USA": "🇺🇸", "Korea": "🇰🇷",
-    "Vietnam": "🇻🇳", "Spain": "🇪🇸", "Greece": "🇬🇷",
-    "Turkey": "🇹", "Brazil": "🇷", "UK": "🇬",
-    "Germany": "🇩🇪", "Australia": "🇦", "Canada": "🇦",
-    "Indonesia": "🇮🇩", "Malaysia": "🇲🇾", "Philippines": "🇵🇭",
-    "Singapore": "🇸🇬", "Nepal": "🇳🇵", "Peru": "🇵🇪",
-    "Lebanon": "🇱🇧", "Morocco": "🇲🇦", "Ethiopia": "🇪🇹",
-    "Nigeria": "🇳🇬", "South Africa": "🇿", "Egypt": "🇬"
-  };
-  return countryMap[countryName] || "🍳";
-};
 </script>
 
 <style scoped>
