@@ -550,14 +550,14 @@ function toggleView() {
 async function fetchRecipes() {
   loading.value = true
   try {
-    const res = await fetch("http://localhost:5000/api/recipes") 
+    const res = await fetch("/api/recipes") 
     recipes.value = await res.json()
 
     // 为没有图片的食谱获取默认图片
     for (const [index, recipe] of recipes.value.entries()) {
       if (!recipe.image) {
         try {
-          const imgRes = await fetch(`http://localhost:5000/api/dish-image?dish=${encodeURIComponent(recipe.name)}&country=${encodeURIComponent(recipe.country)}`);
+          const imgRes = await fetch(`/api/dish-image?dish=${encodeURIComponent(recipe.name)}&country=${encodeURIComponent(recipe.country)}`);
           const data = await imgRes.json();
           recipes.value[index].image = data.image || "https://via.placeholder.com/400x300?text=No+Image";
         } catch (err) {
@@ -624,13 +624,13 @@ async function saveRecipe(){
   saving.value = true
   try {
     if (isEditing.value){
-      await fetch(`http://localhost:5000/api/recipes/${currentRecipe.value._id}`, {
+      await fetch(`/api/recipes/${currentRecipe.value._id}`, {
         method: "PUT",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify(currentRecipe.value)
       })
     } else {
-      await fetch("http://localhost:5000/api/recipes", {
+      await fetch("/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(currentRecipe.value)
@@ -649,7 +649,7 @@ async function saveRecipe(){
 async function deleteRecipe(id) {
   if (confirm("Are you sure you want to delete this recipe? This action cannot be undone.")) {
     try {
-      await fetch(`http://localhost:5000/api/recipes/${id}`, { method: "DELETE" })
+      await fetch(`/api/recipes/${id}`, { method: "DELETE" })
       fetchRecipes()
     } catch (err) {
       console.error("Delete failed:", err)

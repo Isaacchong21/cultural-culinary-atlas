@@ -270,7 +270,7 @@ function viewPost(post) {
 async function approvePost(id) {
   if(!confirm("Approve this post?")) return
   try {
-    await fetch(`http://localhost:5000/api/posts/${id}/approve`, { method: "PUT" })
+    await fetch(`/api/posts/${id}/approve`, { method: "PUT" })
     fetchPosts()
   } catch (err) {
     console.error("Failed to approve:", err)
@@ -284,7 +284,7 @@ function rejectPost(post) {
 
 async function fetchPosts() {
   try {
-    const res = await fetch("http://localhost:5000/api/posts")
+    const res = await fetch("/api/posts")
     posts.value = await res.json()
   } catch (err) {
     console.error("Failed to fetch posts:", err)
@@ -297,7 +297,7 @@ async function batchApprove() {
   if(!confirm(`Approve ${selectedPosts.value.length} posts?`)) return
   try {
     for (const post of selectedPosts.value) {
-      await fetch(`http://localhost:5000/api/posts/${post._id}/approve`, { method: "PUT" })
+      await fetch(`/api/posts/${post._id}/approve`, { method: "PUT" })
     }
     selectedPosts.value = []
     fetchPosts()
@@ -311,7 +311,7 @@ async function batchReject() {
   if(!confirm(`Reject ${selectedPosts.value.length} posts?`)) return
   try {
     for (const post of selectedPosts.value) {
-      await fetch(`http://localhost:5000/api/posts/${post._id}/reject`, { method: "PUT" })
+      await fetch(`/api/posts/${post._id}/reject`, { method: "PUT" })
     }
     selectedPosts.value = []
     fetchPosts()
@@ -330,7 +330,7 @@ function openRejectDialog(post) {
 async function confirmReject() {
   if (!rejectReason.value.trim()) { alert("Please provide a reason for rejection"); return }
   try {
-    await fetch(`http://localhost:5000/api/posts/${selectedPost.value._id}/reject`, {
+    await fetch(`/api/posts/${selectedPost.value._id}/reject`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason: rejectReason.value })
     })
@@ -348,12 +348,13 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
 }
 
+
 function getSafeAvatar(avatar) {
   if (!avatar || avatar === "null" || avatar.trim() === "") return DefaultAvatar
   if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
-  if (avatar.startsWith('/uploads/')) return `http://localhost:5000${avatar}`
-  return `http://localhost:5000${avatar.startsWith('/') ? avatar : '/' + avatar}`
+  return avatar.startsWith('/') ? avatar : '/' + avatar
 }
+
 </script>
 
 <style scoped>

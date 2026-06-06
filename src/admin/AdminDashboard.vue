@@ -242,7 +242,6 @@ use([CanvasRenderer, LineChart, TitleComponent, TooltipComponent, GridComponent]
 
 const router = useRouter()
 
-// ✅ 数据状态
 const stats = ref({ totalUsers: 0, newUsersThisWeek: 0, totalRecipes: 0, newRecipesThisWeek: 0, totalAdmins: 0 })
 const postStats = ref({ total: 0, pending: 0, approved: 0, rejected: 0 })
 const pendingPosts = ref([])
@@ -251,13 +250,10 @@ const processingPosts = ref([])
 const rawUsers = ref([])
 const rawPosts = ref([])
 
-// ✅ 替换原来的 recentActivities computed
 const recentActivities = computed(() => {
-  // 🕒 1. 设置时间范围（例如：只显示最近 7 天的数据）
   const DAYS_LIMIT = 7; 
   const cutoffDate = new Date(Date.now() - DAYS_LIMIT * 24 * 60 * 60 * 1000);
 
-  // 👤 2. 过滤用户：只取最近注册且在时间范围内的前 4 个
   const userActs = rawUsers.value
     .filter(u => new Date(u.joined) > cutoffDate)
     .slice(0, 4)
@@ -270,7 +266,6 @@ const recentActivities = computed(() => {
       createdAt: u.joined
     }));
 
-  // 📝 3. 过滤帖子：只取最近提交且在时间范围内的前 4 个
   const postActs = rawPosts.value
     .filter(p => new Date(p.createdAt) > cutoffDate)
     .slice(0, 4)
@@ -283,13 +278,11 @@ const recentActivities = computed(() => {
       createdAt: p.createdAt
     }));
 
-  // 🔀 4. 合并、按时间倒序、限制总显示条数（例如最多显示 6 条）
   return [...userActs, ...postActs]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 6); // 📦 这里控制最多显示几个卡片
+    .slice(0, 6);
 });
 
-// ✅ ECharts 相关
 const userGrowthChartRef = ref(null)
 const userGrowthData = ref([])
 const growthRate = computed(() => stats.value.totalUsers === 0 ? 0 : Math.round((stats.value.newUsersThisWeek / stats.value.totalUsers) * 100))
@@ -333,9 +326,9 @@ function timeAgo(dateString) {
 async function fetchDashboardData() {
   try {
     const [usersRes, recipesRes, postsRes] = await Promise.all([
-      fetch('http://localhost:5000/api/users'),
-      fetch('http://localhost:5000/api/recipes'),
-      fetch('http://localhost:5000/api/posts')
+      fetch('/api/users'),
+      fetch('/api/recipes'),
+      fetch('/api/posts')
     ])
     const users = await usersRes.json()
     const recipes = await recipesRes.json()
@@ -379,9 +372,9 @@ async function fetchDashboardData() {
 async function approvePost(postId, authorId) {
   processingPosts.value.push(postId + '-approve')
   try {
-    await fetch(`http://localhost:5000/api/posts/${postId}/approve`, { method: 'PUT' })
+    await fetch(`/api/posts/${postId}/approve`, { method: 'PUT' })
     try {
-      await fetch('http://localhost:5000/api/notifications', {
+      await fetch('/api/notifications', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: authorId, type: 'admin_approval', title: 'Post Approved! 🎉', message: 'Your post is now live!', relatedPostId: postId })
       })
@@ -396,7 +389,7 @@ async function rejectPost(postId) {
   if (reason === null) return
   processingPosts.value.push(postId + '-reject')
   try {
-    await fetch(`http://localhost:5000/api/posts/${postId}/reject`, {
+    await fetch(`/api/posts/${postId}/reject`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reason: reason || 'No reason provided' })
     })

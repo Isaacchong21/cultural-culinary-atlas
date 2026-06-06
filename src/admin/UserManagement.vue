@@ -505,7 +505,6 @@ const filteredUsers = computed(() => {
   return list
 })
 
-// 🖼️ 安全头像路径处理
 function getSafeAvatar(avatar) {
   if (!avatar || avatar === "null" || avatar.trim() === "") {
     return DefaultAvatar
@@ -513,13 +512,9 @@ function getSafeAvatar(avatar) {
   if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
     return avatar
   }
-  if (avatar.startsWith('/uploads/')) {
-    return `http://localhost:5000${avatar}`
-  }
-  return `http://localhost:5000${avatar.startsWith('/') ? avatar : '/' + avatar}`
+  return avatar.startsWith('/') ? avatar : '/' + avatar
 }
 
-// ⏰ 相对时间格式化
 function timeAgo(dateString) {
   if (!dateString) return '-'
   const date = new Date(dateString)
@@ -556,7 +551,7 @@ async function copyToClipboard(text) {
 async function fetchUsers() {
   loading.value = true
   try {
-    const res = await fetch("http://localhost:5000/api/users")
+    const res = await fetch("/api/users")
     const data = await res.json()
     users.value = data
   } catch (err) {
@@ -594,7 +589,7 @@ async function addUser() {
   
   saving.value = true
   try {
-    const res = await fetch("http://localhost:5000/api/users", {
+    const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newUser.value)
@@ -625,7 +620,7 @@ async function updateUser() {
   
   saving.value = true
   try {
-    const res = await fetch(`http://localhost:5000/api/users/${editUser.value._id}`, {
+    const res = await fetch(`/api/users/${editUser.value._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editUser.value)
@@ -650,7 +645,7 @@ async function executeDelete() {
   
   deleting.value = true
   try {
-    const res = await fetch(`http://localhost:5000/api/users/${deleteUser.value._id}`, { 
+    const res = await fetch(`/api/users/${deleteUser.value._id}`, { 
       method: "DELETE" 
     })
     if (res.ok) {
