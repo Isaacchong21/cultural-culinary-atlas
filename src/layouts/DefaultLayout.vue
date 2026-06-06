@@ -21,8 +21,8 @@
         <v-img
           :src="Logo"
           alt="Cultural Culinary Atlas Logo"
-          :height="$vuetify.display.mdAndUp ? 90 : 60"
-          :width="$vuetify.display.mdAndUp ? 120 : 80"
+          :height="$vuetify.display.mdAndUp ? 90 : 65"
+          :width="$vuetify.display.mdAndUp ? 110 : 80"
           contain
         ></v-img>
       </v-btn>
@@ -208,7 +208,7 @@
             </v-avatar>
             <div class="d-none d-md-flex flex-column align-start line-height-1 ml-2 user-info">
               <span class="text-caption font-weight-bold text-grey-darken-4">{{ UserProfile.name }}</span>
-              <span class="text-overline text-grey-darken-1">View Profile</span>
+              <span v-if="userRole === 'user'" class="text-overline text-grey-darken-1">View Profile</span>
             </div>
             <v-icon icon="mdi-chevron-down" size="small" class="ml-1 d-none d-md-flex chevron-icon" />
           </v-btn>
@@ -225,11 +225,12 @@
             <v-list-item-subtitle class="text-truncate">{{ UserProfile.email }}</v-list-item-subtitle>
           </v-list-item>
           
-          <v-divider class="my-1" />
-          
-          <v-list density="compact" nav>
-            <v-list-item to="/profile" prepend-icon="mdi-account-outline" title="My Profile" link class="rounded-lg mx-2 my-1" />
-          </v-list>
+          <template v-if="userRole === 'user'">
+            <v-divider class="my-1" />
+            <v-list density="compact" nav>
+              <v-list-item to="/profile" prepend-icon="mdi-account-outline" title="My Profile" link class="rounded-lg mx-2 my-1" />
+            </v-list>
+          </template>
           
           <v-divider class="my-1" />
           
@@ -324,33 +325,59 @@
       </v-container>
     </v-main>
 
-    <!-- Footer -->
+    <!-- ✅ 专业版 Footer（仅保留返回顶部 + 技术栈，移除不稳定的 Dark Mode） -->
     <v-footer 
-      app
+      app 
       color="grey-lighten-4" 
-      class="pa-0 border-t-light"
-      height="auto"
+      class="pa-0 border-t-light professional-footer"
       role="contentinfo"
       aria-label="Site Footer"
     >
-      <v-container fluid class="py-3">
-        <v-row justify="center" class="text-center" no-gutters>
-          <v-col cols="12" class="mb-2">
-            <div class="d-flex align-center justify-center mb-2">
-              <v-icon icon="mdi-earth" color="orange" size="28" class="mr-2" />
+      <v-container fluid class="py-6">
+        <v-row dense>
+          <!-- 品牌信息 & 操作按钮 -->
+          <v-col cols="12" md="6" class="mb-4">
+            <div class="d-flex align-center mb-3">
+              <v-icon icon="mdi-earth" color="orange" size="24" class="mr-2" />
               <span class="text-h6 font-weight-bold text-orange-darken-4">Cultural Culinary Atlas</span>
             </div>
-            <p class="text-body-2 text-grey-darken-1 mb-3">
-              Discover authentic recipes from around the world
+            <p class="text-body-2 text-grey mb-4" style="max-width: 400px;">
+              Discover authentic recipes, share culinary journeys, and connect with food lovers worldwide.
+            </p>
+            <div class="d-flex align-center gap-4">
+              <!-- ✅ 仅保留返回顶部按钮 -->
+              <v-btn 
+                variant="outlined" 
+                size="small" 
+                @click="scrollToTop"
+                class="rounded-pill text-none"
+                prepend-icon="mdi-arrow-up"
+              >
+                Back to Top
+              </v-btn>
+            </div>
+          </v-col>
+
+          <!-- 技术栈展示 -->
+          <v-col cols="12" md="6" class="mb-4 text-md-right">
+            <h4 class="text-subtitle-2 font-weight-bold text-grey-darken-3 mb-3">TECHNOLOGY STACK</h4>
+            <div class="d-flex flex-wrap justify-md-end gap-2">
+              <v-chip size="small" color="blue" variant="tonal">Vue 3</v-chip>
+              <v-chip size="small" color="green" variant="tonal">Vuetify 3</v-chip>
+              <v-chip size="small" color="orange" variant="tonal">Node.js</v-chip>
+              <v-chip size="small" color="green" variant="tonal">MongoDB</v-chip>
+            </div>
+            <p class="text-caption text-grey mt-3">
+              COS30043 Final Year Project
             </p>
           </v-col>
-          <v-col cols="12">
-            <span class="text-caption text-grey-darken-1 d-block">
-              <strong class="text-orange-darken-4">Cultural Culinary Atlas</strong> 
-              © {{ new Date().getFullYear() }} • COS30043 Project
-            </span>
-          </v-col>
         </v-row>
+
+        <!-- 底部版权栏 -->
+        <v-divider class="my-4" />
+        <div class="d-flex flex-wrap justify-space-between align-center text-caption text-grey-darken-1">
+          <span>© {{ new Date().getFullYear() }} Cultural Culinary Atlas. All rights reserved.</span>
+        </div>
       </v-container>
     </v-footer>
   </v-app>
@@ -418,6 +445,14 @@ const UserProfile = ref({
 
 function handleScroll() {
   scrolled.value = window.scrollY > 10;
+}
+
+// ✅ 返回顶部功能
+function scrollToTop() {
+  window.scrollTo({ 
+    top: 0, 
+    behavior: 'smooth' 
+  });
 }
 
 async function fetchNotifications() {
@@ -574,6 +609,15 @@ onUnmounted(() => {
   z-index: 1; 
 }
 
+/* ========== 专业 Footer 样式 ========== */
+.professional-footer :deep(.v-chip) {
+  margin: 4px;
+  font-weight: 500;
+}
+
+.gap-2 { gap: 8px; }
+.gap-4 { gap: 16px; }
+
 /* ========== 用户菜单交互优化 ========== */
 .user-avatar {
   transition: all 0.2s ease;
@@ -585,19 +629,11 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
 }
 
-.user-info {
-  transition: color 0.2s ease;
-}
-.user-menu-btn:hover .user-info {
-  color: #ff5722;
-}
+.user-info { transition: color 0.2s ease; }
+.user-menu-btn:hover .user-info { color: #ff5722; }
 
-.chevron-icon {
-  transition: transform 0.2s ease;
-}
-.user-menu-btn:hover .chevron-icon {
-  transform: rotate(180deg);
-}
+.chevron-icon { transition: transform 0.2s ease; }
+.user-menu-btn:hover .chevron-icon { transform: rotate(180deg); }
 
 .user-menu-card {
   border-radius: 16px !important;
@@ -610,46 +646,30 @@ onUnmounted(() => {
   transition: all 0.2s ease;
   min-height: 48px;
 }
-
 .user-menu-card :deep(.v-list-item:hover) {
   background: rgba(255, 152, 0, 0.08) !important;
   transform: translateX(4px);
 }
-
 .user-menu-card :deep(.v-list-item:first-child) {
   background: rgba(255, 248, 240, 0.5) !important;
   border-radius: 12px !important;
   margin: 0 8px 8px 8px;
   width: calc(100% - 16px);
 }
+.user-menu-card :deep(.v-list-item:last-child) { color: #d32f2f !important; }
+.user-menu-card :deep(.v-list-item:last-child:hover) { background: rgba(211, 47, 47, 0.08) !important; }
 
-.user-menu-card :deep(.v-list-item:last-child) {
-  color: #d32f2f !important;
-}
-.user-menu-card :deep(.v-list-item:last-child:hover) {
-  background: rgba(211, 47, 47, 0.08) !important;
-}
-
-.auth-btn {
-  transition: all 0.2s ease;
-  border-radius: 10px !important;
-}
-.auth-btn:hover {
-  transform: translateY(-1px);
-}
+.auth-btn { transition: all 0.2s ease; border-radius: 10px !important; }
+.auth-btn:hover { transform: translateY(-1px); }
 
 .auth-btn-mobile {
   padding: 0 12px !important;
   border-radius: 20px !important;
   transition: all 0.2s ease;
 }
-.auth-btn-mobile:hover {
-  background: rgba(255, 87, 34, 0.08) !important;
-}
+.auth-btn-mobile:hover { background: rgba(255, 87, 34, 0.08) !important; }
 
-.text-grey-darken-1 {
-  color: #616161 !important;
-}
+.text-grey-darken-1 { color: #616161 !important; }
 
 .glass-effect {
   background: rgba(255, 255, 255, 0.85) !important;
@@ -658,27 +678,13 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-.search-bar-custom :deep(.v-field__input) {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
-}
-.search-bar-custom :deep(.v-field--variant-solo-filled) {
-  box-shadow: none !important;
-}
+.search-bar-custom :deep(.v-field__input) { padding-top: 4px !important; padding-bottom: 4px !important; }
+.search-bar-custom :deep(.v-field--variant-solo-filled) { box-shadow: none !important; }
 
-.ring-border {
-  border: 2px solid white;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
+.ring-border { border: 2px solid white; box-shadow: 0 0 0 1px rgba(0,0,0,0.1); }
+.line-height-1 { line-height: 1.2; }
 
-.line-height-1 { 
-  line-height: 1.2; 
-}
-
-.v-list-item--active { 
-  position: relative; 
-}
-
+.v-list-item--active { position: relative; }
 .v-list-item--active::before {
   content: "";
   position: absolute;
@@ -688,38 +694,16 @@ onUnmounted(() => {
   border-radius: 0 4px 4px 0;
 }
 
-.notification-btn {
-  position: relative;
-  transition: transform 0.2s ease;
-}
+.notification-btn { position: relative; transition: transform 0.2s ease; }
 .notification-btn:hover { transform: scale(1.1); }
+.notification-panel { border-radius: 16px !important; overflow: hidden; }
+.unread-bg { background: rgba(255, 152, 0, 0.04) !important; }
+.border-b { border-bottom: 1px solid rgba(0,0,0,0.06); }
+.border-t-light { border-top: 1px solid rgba(0,0,0,0.06) !important; }
 
-.notification-panel {
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
-.unread-bg { 
-  background: rgba(255, 152, 0, 0.04) !important; 
-}
-
-.border-b { 
-  border-bottom: 1px solid rgba(0,0,0,0.06); }
-.border-t-light { 
-  border-top: 1px solid rgba(0,0,0,0.06) !important; 
-}
-
-:deep(.v-list)::-webkit-scrollbar { 
-  width: 4px; 
-}
-
-:deep(.v-list)::-webkit-scrollbar-track { 
-  background: transparent; 
-}
-
-:deep(.v-list)::-webkit-scrollbar-thumb { 
-  background: rgba(0,0,0,0.2); border-radius: 4px; 
-}
+:deep(.v-list)::-webkit-scrollbar { width: 4px; }
+:deep(.v-list)::-webkit-scrollbar-track { background: transparent; }
+:deep(.v-list)::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
 
 .v-btn:focus-visible, .v-list-item:focus-visible {
   outline: 2px solid #ff5722 !important;
@@ -727,39 +711,17 @@ onUnmounted(() => {
 }
 
 @media (max-width: 600px) {
-  .app-bar-custom { 
-    padding: 0 4px !important; 
-  }
-
-  .logo-btn { 
-    margin-left: 2px !important; 
-  }
-
-  .notification-btn { 
-    margin-right: 2px !important; 
-  }
-
-  .user-menu-btn { 
-    margin-right: 2px !important; 
-  }
-
-  .d-xs-none { 
-    display: none !important; 
-  }
+  .app-bar-custom { padding: 0 4px !important; }
+  .logo-btn { margin-left: 2px !important; }
+  .notification-btn { margin-right: 2px !important; }
+  .user-menu-btn { margin-right: 2px !important; }
+  .d-xs-none { display: none !important; }
+  .professional-footer .text-h6 { font-size: 1.1rem !important; }
 }
 
 @media (max-width: 360px) {
-  .v-app-bar { 
-    height: 60px !important; 
-  }
-
-  .logo-btn :deep(img) { 
-    height: 50px !important; 
-    width: 65px !important; 
-  }
-
-  .v-footer .text-caption { 
-    font-size: 0.7rem !important; 
-  }
+  .v-app-bar { height: 60px !important; }
+  .logo-btn :deep(img) { height: 50px !important; width: 65px !important; }
+  .v-footer .text-caption { font-size: 0.7rem !important; }
 }
 </style>
