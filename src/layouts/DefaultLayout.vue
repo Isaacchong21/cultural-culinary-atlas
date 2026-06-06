@@ -368,7 +368,7 @@
               <v-chip size="small" color="green" variant="tonal">MongoDB</v-chip>
             </div>
             <p class="text-caption text-grey mt-3">
-              COS30043 Final Year Project
+              COS30043 Interface Design and Development
             </p>
           </v-col>
         </v-row>
