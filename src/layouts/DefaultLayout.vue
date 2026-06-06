@@ -373,7 +373,6 @@
           </v-col>
         </v-row>
 
-        <!-- 底部版权栏 -->
         <v-divider class="my-4" />
         <div class="d-flex flex-wrap justify-space-between align-center text-caption text-grey-darken-1">
           <span>© {{ new Date().getFullYear() }} Cultural Culinary Atlas. All rights reserved.</span>
