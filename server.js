@@ -568,7 +568,7 @@ app.post("/api/upload", uploadMedia.array("file", 10), (req, res) => {
 
 app.post("/api/init-admin", async (req, res) => {
   try {
-    const existingAdmin = await User.findOne({ email: "admin@staff.com" });
+    const existingAdmin = await User.findOne({ email: "admin@staff.com.my" });
     if (existingAdmin) return res.status(400).json({ error: "Admin already exists" });
     const hashedPassword = await bcrypt.hash("admin123", 10);
     const adminUser = new User({ name: "Admin", email: "admin@staff.com", password: hashedPassword, role: "admin" });
