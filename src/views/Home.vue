@@ -1,23 +1,18 @@
 <template>
   <div class="map-wrapper">
-    
-    <!-- ✅ 简化底部提示（仅提供信息，非交互） -->
+
     <div class="map-footer-badge">
       <span class="badge-text">💡 Click any marker to explore recipes</span>
     </div>
 
-    <!-- 加载遮罩 -->
     <div v-if="loading" class="map-overlay">
       <div class="spinner"></div>
       <p class="mt-3 text-grey-darken-2">Locating culinary destinations...</p>
     </div>
 
-    <!-- 地图容器 -->
-    <div id="map" class="map-container"></div>
 
-    <!-- ✅ 右上角玻璃态工具栏（始终可见 + 水平排列） -->
+    <div id="map" class="map-container"></div>
     <div class="map-toolbar">
-      <!-- 🌏 Browse All (主操作) -->
       <router-link 
         to="/country" 
         class="toolbar-btn primary" 
@@ -29,7 +24,6 @@
       
       <v-divider vertical inset class="toolbar-divider" />
       
-      <!-- 🌍 Fit View -->
       <button 
         class="toolbar-btn" 
         @click="fitAllMarkers" 
@@ -40,8 +34,7 @@
       </button>
       
       <v-divider vertical inset class="toolbar-divider" />
-      
-      <!-- 🎲 Random Explore -->
+
       <button 
         class="toolbar-btn" 
         @click="exploreRandom" 
@@ -107,7 +100,6 @@ async function loadUserTrips() {
   if (!userId) return [];
   
   try {
-    // ✅ 使用相对路径
     const res = await fetch(`/api/trips/${userId}`);
     if (res.ok) {
       const trips = await res.json();
@@ -154,8 +146,7 @@ async function addDishToTrip(dish) {
       countries: [dish.country],
       days: [{ dayNumber: 1, dishes: [] }]
     };
-    
-    // ✅ 使用相对路径
+
     const createRes = await fetch(`/api/trips/${userId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -175,7 +166,7 @@ async function addDishToTrip(dish) {
   
   const exists = targetDay.dishes?.some(d => (d._id || d.id) === dishId);
   if (exists) {
-    console.log("ℹ️ Already in trip:", dish.name);
+    console.log("ℹAlready in trip:", dish.name);
     return true;
   }
   
@@ -188,7 +179,6 @@ async function addDishToTrip(dish) {
     tasted: false
   }];
   
-  // ✅ 使用相对路径
   const saveRes = await fetch(`/api/trips/${userId}/${targetTrip._id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -235,7 +225,6 @@ async function removeDishFromTrip(dish) {
     d => (d._id || d.id) !== dishId
   );
   
-  // ✅ 使用相对路径
   const saveRes = await fetch(`/api/trips/${userId}/${foundTrip._id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -435,8 +424,6 @@ onMounted(async () => {
 
   try {
     await loadUserTrips();
-
-    // ✅ 使用相对路径
     const res = await fetch('/api/recipes');
     const recipes = await res.json();
     
@@ -471,9 +458,9 @@ onMounted(async () => {
             <span class="count-badge">${count}</span>
           </div>
         `,
-        iconSize: [50, 50],
-        iconAnchor: [25, 50],
-        popupAnchor: [0, -50] 
+        iconSize: [44, 54],
+        iconAnchor: [22, 54],
+        popupAnchor: [0, -44] 
       });
 
       const featuredDishes = dishes.slice(0, 3);
@@ -633,7 +620,6 @@ function fitAllMarkers() {
   z-index: 1;
 }
 
-/* ✅ 简化底部提示 */
 .map-footer-badge {
   position: absolute;
   bottom: 16px;
@@ -684,14 +670,12 @@ function fitAllMarkers() {
   transform: translateY(-1px);
 }
 
-/* ✅ 分隔线 */
 .toolbar-divider {
   border-color: rgba(0, 0, 0, 0.08) !important;
   margin: 0 4px !important;
   height: 24px !important;
 }
 
-/* ✅ 按钮样式 */
 .toolbar-btn {
   display: inline-flex;
   align-items: center;
@@ -722,7 +706,6 @@ function fitAllMarkers() {
   transform: scale(0.98);
 }
 
-/* ✅ 主按钮（Browse All）高亮 */
 .toolbar-btn.primary {
   color: #ff5722;
   font-weight: 600;
@@ -732,12 +715,10 @@ function fitAllMarkers() {
   background: rgba(255, 87, 34, 0.12);
 }
 
-/* ✅ 按钮标签（移动端可隐藏） */
 .btn-label {
   display: inline;
 }
 
-/* ✅ 加载遮罩 */
 .map-overlay {
   position: absolute;
   inset: 0;
@@ -763,7 +744,6 @@ function fitAllMarkers() {
   to { transform: rotate(360deg)}
 }
 
-/* ✅ 移动端适配：隐藏文字，只显示图标 */
 @media (max-width: 768px) {
   .map-toolbar {
     top: 16px;
@@ -793,7 +773,6 @@ function fitAllMarkers() {
   }
 }
 
-/* ✅ 深色模式适配 */
 @media (prefers-color-scheme: dark) {
   .map-toolbar {
     background: rgba(30, 30, 46, 0.85);
@@ -824,7 +803,6 @@ function fitAllMarkers() {
 </style>
 
 <style>
-/* 基础标记样式 */
 .custom-marker {
   background: transparent !important;
   border: none !important;
@@ -834,8 +812,7 @@ function fitAllMarkers() {
   width: 55px;
   height: 55px;
   background: #ffffff;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
+  border-radius: 50%;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
@@ -843,32 +820,48 @@ function fitAllMarkers() {
   position: relative;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
-  border: 2px solid rgba(255,255,255,0.9);
-  overflow: hidden;
+  border: 3px solid rgba(255,255,255,0.9);
+  overflow: visible;
+}
+
+.marker-pin::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #fff;
+  filter: drop-shadow(0 4px 4px rgba(0,0,0,0.15));
+  z-index: -1;
 }
 
 .marker-pin img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .marker-pin:hover {
-  transform: rotate(-45deg) scale(1.15);
+  transform: translateY(-4px) scale(1.15);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .count-badge {
   position: absolute;
-  bottom: -4px;
-  right: -4px;
+  top: -8px;
+  right: -8px;
   background: #ff5722;
   color: white;
   font-size: 11px;
   font-weight: 700;
-  width: 20px;
+  min-width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 10%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -876,9 +869,9 @@ function fitAllMarkers() {
   transform: rotate(45deg);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   z-index: 2;
+  padding: 0 4px;
 }
 
-/* 脉冲动画 */
 .pulse-marker::after {
   content: '';
   position: absolute;
@@ -898,7 +891,6 @@ function fitAllMarkers() {
   100% { transform: scale(2.5); opacity: 0; }
 }
 
-/* Tooltip 样式 */
 .custom-tooltip {
   background: rgba(30, 30, 30, 0.9) !important;
   color: white !important;
@@ -913,7 +905,6 @@ function fitAllMarkers() {
   border-top-color: rgba(30, 30, 30, 0.9) !important;
 }
 
-/* 弹窗样式 */
 .leaflet-popup-content-wrapper.leaflet-custom-popup {
   border-radius: 16px !important;
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12) !important;
@@ -960,7 +951,6 @@ function fitAllMarkers() {
   font-weight: 600;
 }
 
-/* ✅ 新增：特色推荐区域样式 */
 .popup-featured {
   display: flex;
   flex-direction: column;
@@ -968,7 +958,6 @@ function fitAllMarkers() {
   margin-bottom: 12px;
 }
 
-/* ✅ 新增：弹窗底部样式 */
 .popup-footer {
   text-align: center;
   padding-top: 12px;
@@ -988,7 +977,6 @@ function fitAllMarkers() {
   text-decoration: underline;
 }
 
-/* 菜品项样式 */
 .dish-item {
   display: flex;
   justify-content: space-between;
@@ -1007,7 +995,6 @@ function fitAllMarkers() {
   transform: translateX(4px);
 }
 
-/* ✅ 新增：特色菜品项样式 */
 .dish-item.featured {
   background: #fff9f5;
   border-color: #ffe0b2;
@@ -1053,7 +1040,6 @@ function fitAllMarkers() {
   opacity: 1;
 }
 
-/* 加入行程按钮样式 */
 .add-route-btn {
   width: 28px;
   height: 28px;
