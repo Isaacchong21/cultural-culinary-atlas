@@ -56,7 +56,6 @@
               </v-btn-toggle>
             </v-col>
             
-            <!-- 结果计数 -->
             <v-col cols="12" sm="2" class="px-2 d-flex align-center justify-center">
               <v-chip variant="tonal" color="orange" class="font-weight-bold">
                 {{ filteredDishes.length }} dishes
@@ -67,14 +66,12 @@
       </v-col>
     </v-row>
 
-    <!-- Loading State -->
     <v-row v-if="loading" justify="center">
       <v-col v-for="i in 8" :key="i" cols="12" sm="6" md="4" lg="3">
         <v-skeleton-loader type="card" height="320" class="rounded-xl" />
       </v-col>
     </v-row>
 
-    <!-- Empty State -->
     <v-row v-else-if="filteredDishes.length === 0" justify="center" class="py-16">
       <v-col cols="12" class="text-center">
         <v-icon icon="mdi-silverware-fork-knife" size="80" color="grey-lighten-2" class="mb-4" />
@@ -93,7 +90,6 @@
       </v-col>
     </v-row>
 
-    <!-- List View with Expansion Panels -->
     <v-expansion-panels 
       v-if="viewMode === 'list'" 
       v-model="expandedPanels" 
@@ -154,10 +150,8 @@
       </v-expansion-panel>
     </v-expansion-panels>
 
-    <!-- Grid View -->
     <template v-else>
       <div v-for="(dishes, country) in groupedDishes" :key="country" class="country-section mb-10">
-        <!-- 国家标题 -->
         <div class="country-header d-flex align-center justify-space-between mb-4">
           <div class="d-flex align-center gap-3">
             <v-icon icon="mdi-earth" size="24" color="orange-darken-4" />
@@ -167,7 +161,6 @@
             </v-chip>
           </div>
           
-          <!-- 只有未选国家时才显示展开/收起按钮 -->
           <v-btn 
             v-if="!selectedCountry"
             size="small" 
@@ -178,8 +171,7 @@
             {{ expandedCountries.includes(country) ? '▼ Collapse' : '▶ Expand' }}
           </v-btn>
         </div>
-        
-        <!-- 菜品网格显示逻辑 -->
+
         <v-expand-transition>
           <div v-if="shouldShowCountryGrid(country)">
             <v-row class="ma-n2">
@@ -226,7 +218,6 @@ const router = useRouter();
 const route = useRoute();
 const searchStore = useSearchStore();
 
-// State
 const selectedCountry = ref("");
 const sortBy = ref("name-asc");
 const viewMode = ref("grid");
@@ -236,7 +227,6 @@ const countries = ref([]);
 const expandedCountries = ref([]);
 const expandedPanels = ref([]);
 
-// Favorites
 const favouriteIds = ref([]);
 try {
   const stored = localStorage.getItem("favouriteIds");
@@ -249,7 +239,6 @@ try {
   favouriteIds.value = [];
 }
 
-// Sort options
 const sortOptions = [
   { title: "Name A-Z", value: "name-asc" },
   { title: "Name Z-A", value: "name-desc" },
@@ -257,18 +246,15 @@ const sortOptions = [
   { title: "Newest First", value: "newest" }
 ];
 
-// Computed: Filtered & Sorted Dishes
 const filteredDishes = computed(() => {
   if (!Array.isArray(allDishes.value)) return [];
   
   let list = [...allDishes.value];
-  
-  // Country filter
+
   if (selectedCountry.value) {
     list = list.filter(d => d.country === selectedCountry.value);
   }
-  
-  // Search filter
+
   if (searchStore.term.trim()) {
     const q = searchStore.term.toLowerCase();
     list = list.filter(d =>
@@ -277,8 +263,7 @@ const filteredDishes = computed(() => {
       d.description?.toLowerCase().includes(q)
     );
   }
-  
-  // Sorting
+
   switch (sortBy.value) {
     case "name-asc":
       list.sort((a, b) => a.name.localeCompare(b.name));
@@ -311,6 +296,7 @@ const groupedDishes = computed(() => {
     return acc;
   }, {});
 });
+
 
 function isFavourite(dishId) {
   if (!Array.isArray(favouriteIds.value)) return false;
@@ -413,9 +399,24 @@ watch(selectedCountry, (newCountry) => {
 
 watch(
   () => route.query.country,
-  (newCountry) => {
-    if (newCountry && newCountry !== selectedCountry.value) {
-      selectedCountry.value = newCountry;
+  (newCountrySlug) => {
+    if (newCountrySlug) {
+      const matchedCountry = countries.value.find(c => {
+        const cSlug = c.trim().toLowerCase().replace(/\s+/g, "-");
+        return cSlug === newCountrySlug.toLowerCase();
+      });
+      
+      if (matchedCountry && matchedCountry !== selectedCountry.value) {
+        selectedCountry.value = matchedCountry;
+        if (!expandedCountries.value.includes(matchedCountry)) {
+          expandedCountries.value = [matchedCountry];
+          expandedPanels.value = [matchedCountry];
+        }
+      }
+    } else {
+      selectedCountry.value = "";
+      expandedCountries.value = [];
+      expandedPanels.value = [];
     }
   }
 );
@@ -423,24 +424,20 @@ watch(
 onMounted(async () => {
   loading.value = true;
   try {
-    // ✅ 使用相对路径
     const res = await fetch('/api/recipes');
     const data = await res.json();
-    
-    // 映射数据，确保每个 dish 都有唯一的 id
+ 
     const mappedDishes = Array.isArray(data) ? data.map(d => ({ ...d, id: d.id || d._id })) : [];
     allDishes.value = mappedDishes;
     
     countries.value = [...new Set(mappedDishes.map(d => d.country).filter(Boolean))].sort();
     
-    // ✅ 优化图片加载：使用 Promise.allSettled 并行加载，避免索引错位
     const imagePromises = mappedDishes.map(async (dish) => {
       if (!dish.image) {
         try {
-          // ✅ 使用相对路径
+  
           const imgRes = await fetch(`/api/dish-image?dish=${encodeURIComponent(dish.name)}&country=${encodeURIComponent(dish.country)}`);
           const imgData = await imgRes.json();
-          // 直接修改对象属性，因为 mappedDishes 是响应式数组的引用
           dish.image = imgData.image || "/images/default-dish.jpg";
         } catch (err) {
           dish.image = "/images/default-dish.jpg";
@@ -449,12 +446,13 @@ onMounted(async () => {
     });
     
     await Promise.allSettled(imagePromises);
-    
-    // 处理路由参数预过滤
+
     if (route.query.country) {
-      const matchedCountry = countries.value.find(
-        c => c.toLowerCase() === route.query.country.toLowerCase()
-      );
+      const querySlug = route.query.country.toLowerCase();
+      const matchedCountry = countries.value.find(c => {
+        const cSlug = c.trim().toLowerCase().replace(/\s+/g, "-");
+        return cSlug === querySlug;
+      });
 
       if (matchedCountry) {
         selectedCountry.value = matchedCountry;
