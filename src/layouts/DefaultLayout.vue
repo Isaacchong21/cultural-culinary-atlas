@@ -446,7 +446,6 @@ function handleScroll() {
   scrolled.value = window.scrollY > 10;
 }
 
-// ✅ 返回顶部功能
 function scrollToTop() {
   window.scrollTo({ 
     top: 0, 
@@ -580,19 +579,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ========== 全局布局 (粘性页脚方案) ========== */
 :deep(.v-application__wrap) {
-  min-height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
+  min-height: auto !important;
 }
 
 :deep(.v-main) {
-  flex: 1 0 auto !important;
+  flex: 0 0 auto !important;
   min-height: auto !important;
-  height: auto !important;
-  display: flex;
-  flex-direction: column;
+  display: block !important;
 }
 
 :deep(.v-main > .v-container),
@@ -602,7 +596,6 @@ onUnmounted(() => {
 }
 
 :deep(.v-footer) {
-  flex: 0 0 auto !important;
   width: 100%;
   position: relative !important;
   z-index: 1; 

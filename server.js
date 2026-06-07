@@ -1115,6 +1115,57 @@ Generate 2 practical recipes. STRICTLY return ONLY a JSON array:
   }
 });
 
+app.post("/api/ai-itinerary-review", async (req, res) => {
+  try {
+    const { days } = req.body;
+    if (!days || days.length === 0) return res.status(400).json({ error: "No itinerary data" });
+
+    const simplifiedDays = days.map(day => ({
+      dayNumber: day.dayNumber,
+      dishes: day.dishes.map(d => `${d.name} (${d.country}${d.city ? ', ' + d.city : ''})`)
+    }));
+
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const prompt = `You are an expert local food guide and travel planner. Review this food trip itinerary:
+${JSON.stringify(simplifiedDays)}
+
+Provide a brief, constructive review (max 150 words). 
+1. Highlight any lack of diversity (e.g., too many heavy carbs, missing vegetarian options, or eating the same dish twice).
+2. Suggest 1-2 specific, actionable swaps or additions to make the culinary journey more balanced and authentic.
+Use an encouraging tone and include relevant food/travel emojis. Return ONLY the review text.`;
+
+    const result = await model.generateContent(prompt);
+    const review = result.response.text().trim();
+    res.json({ review });
+  } catch (err) {
+    console.error("AI Review Error:", err);
+    res.status(500).json({ error: "Failed to generate review" });
+  }
+});
+
+app.post("/api/ai-budget-estimate", async (req, res) => {
+  try {
+    const { dishes } = req.body;
+    if (!dishes || dishes.length === 0) return res.status(400).json({ error: "No dishes data" });
+
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const prompt = `Estimate the average restaurant meal price in USD for the following dishes in their respective countries. 
+Return ONLY a valid JSON object mapping the exact dish name to the estimated price (number). 
+Example: {"Sushi": 25, "Pad Thai": 8, "Croissant": 4}
+Dishes: ${JSON.stringify(dishes)}`;
+
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    text = text.replace(/```json\n?|```\n?/g, "").trim();
+    
+    const priceMap = JSON.parse(text);
+    res.json({ priceMap });
+  } catch (err) {
+    console.error("AI Budget Error:", err);
+    res.status(500).json({ error: "Failed to estimate budget" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on ${API_BASE_URL}`);
 });
