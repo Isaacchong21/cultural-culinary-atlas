@@ -1040,6 +1040,20 @@ app.post('/api/notifications', async (req, res) => {
   }
 })
 
+app.delete('/api/notifications/:notifId', async (req, res) => {
+  try {
+    await Notification.findByIdAndDelete(req.params.notifId);
+    res.json({ message: 'Notification deleted' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/notifications/clear/:userId', async (req, res) => {
+  try {
+    await Notification.deleteMany({ userId: req.params.userId });
+    res.json({ message: 'All notifications cleared' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

@@ -86,19 +86,33 @@
           </template>
           
           <v-card class="notification-panel" role="region" aria-label="Notifications Panel">
+            <!-- ✅ 修改：添加了 Clear All 按钮 -->
             <v-card-title class="d-flex align-center justify-space-between pa-4 border-b">
               <span class="text-h6 font-weight-bold">Notifications</span>
-              <v-btn 
-                v-if="notifications.length" 
-                size="small" 
-                variant="text" 
-                color="orange"
-                @click="markAllAsRead"
-                class="text-none"
-                aria-label="Mark all as read"
-              >
-                Mark all as read
-              </v-btn>
+              <div class="d-flex gap-2">
+                <v-btn 
+                  v-if="notifications.length" 
+                  size="small" 
+                  variant="text" 
+                  color="orange"
+                  @click="markAllAsRead"
+                  class="text-none"
+                  aria-label="Mark all as read"
+                >
+                  <v-icon start size="16">mdi-check-all</v-icon> Mark read
+                </v-btn>
+                <v-btn 
+                  v-if="notifications.length" 
+                  size="small" 
+                  variant="text" 
+                  color="error"
+                  @click="clearAllNotifications"
+                  class="text-none"
+                  aria-label="Clear all notifications"
+                >
+                  <v-icon start size="16">mdi-delete</v-icon> Clear
+                </v-btn>
+              </div>
             </v-card-title>
             
             <v-card-text class="pa-0">
@@ -108,6 +122,7 @@
               </div>
               
               <v-list v-else class="py-0" max-height="400" style="overflow-y:auto;" role="list">
+                <!-- ✅ 修改：添加了单独删除按钮 -->
                 <v-list-item
                   v-for="notif in notifications"
                   :key="notif._id"
@@ -140,14 +155,24 @@
                     </v-list-item-subtitle>
                   </div>
                   
-                  <v-icon 
-                    v-if="!notif.isRead" 
-                    icon="mdi-circle" 
-                    size="8" 
-                    color="orange" 
-                    class="ml-2"
-                    aria-label="Unread notification"
-                  />
+                  <div class="d-flex align-center">
+                    <v-icon 
+                      v-if="!notif.isRead" 
+                      icon="mdi-circle" 
+                      size="8" 
+                      color="orange" 
+                      class="mr-2"
+                      aria-label="Unread notification"
+                    />
+                    <v-btn 
+                      icon="mdi-close" 
+                      size="x-small" 
+                      variant="text" 
+                      color="grey" 
+                      @click.stop="deleteNotification(notif._id)" 
+                      title="Delete notification"
+                    />
+                  </div>
                 </v-list-item>
               </v-list>
             </v-card-text>
@@ -209,6 +234,7 @@
             <div class="d-none d-md-flex flex-column align-start line-height-1 ml-2 user-info">
               <span class="text-caption font-weight-bold text-grey-darken-4">{{ UserProfile.name }}</span>
               <span v-if="userRole === 'user'" class="text-overline text-grey-darken-1">View Profile</span>
+              <span v-else class="text-overline text-red-darken-2 font-weight-bold">Administrator</span>
             </div>
             <v-icon icon="mdi-chevron-down" size="small" class="ml-1 d-none d-md-flex chevron-icon" />
           </v-btn>
@@ -325,7 +351,7 @@
       </v-container>
     </v-main>
 
-    <!-- ✅ 专业版 Footer（仅保留返回顶部 + 技术栈，移除不稳定的 Dark Mode） -->
+    <!-- 专业版 Footer -->
     <v-footer 
       app 
       color="grey-lighten-4" 
@@ -356,7 +382,6 @@
             </div>
           </v-col>
 
-          <!-- 技术栈展示 -->
           <v-col cols="12" md="6" class="mb-4 text-md-right">
             <h4 class="text-subtitle-2 font-weight-bold text-grey-darken-3 mb-3">TECHNOLOGY STACK</h4>
             <div class="d-flex flex-wrap justify-md-end gap-2">
@@ -440,6 +465,15 @@ const UserProfile = ref({
   avatar: getSafeAvatar()
 });
 
+// ✅ 新增：用于同步头像的函数
+function refreshUserProfile() {
+  UserProfile.value = {
+    name: localStorage.getItem("userName") || "Guest",
+    email: localStorage.getItem("userEmail") || "",
+    avatar: getSafeAvatar()
+  };
+}
+
 function handleScroll() {
   scrolled.value = window.scrollY > 10;
 }
@@ -492,6 +526,26 @@ async function markAllAsRead() {
   } catch (err) {
     console.warn('Failed to sync read-all status:', err);
   }
+}
+
+// ✅ 新增：清空所有通知
+async function clearAllNotifications() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+  try {
+    const res = await fetch(`/api/notifications/clear/${userId}`, { method: 'DELETE' });
+    if (res.ok) notifications.value = [];
+  } catch (err) { console.error('Failed to clear notifications', err); }
+}
+
+// ✅ 新增：删除单个通知
+async function deleteNotification(notifId) {
+  try {
+    const res = await fetch(`/api/notifications/${notifId}`, { method: 'DELETE' });
+    if (res.ok) {
+      notifications.value = notifications.value.filter(n => n._id !== notifId);
+    }
+  } catch (err) { console.error('Failed to delete notification', err); }
 }
 
 function handleNotificationClick(notif) {
@@ -557,6 +611,8 @@ function logout() {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
+  // ✅ 监听头像更新事件
+  window.addEventListener('user-profile-updated', refreshUserProfile); 
 
   if (window.innerWidth < 960) {
     drawer.value = false;
@@ -572,11 +628,15 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
+  // ✅ 移除头像更新监听
+  window.removeEventListener('user-profile-updated', refreshUserProfile); 
+  
   if (notificationInterval) clearInterval(notificationInterval);
 });
 </script>
 
 <style scoped>
+/* ========== 全局布局 ========== */
 :deep(.v-application__wrap) {
   min-height: auto !important;
 }
@@ -599,6 +659,7 @@ onUnmounted(() => {
   z-index: 1; 
 }
 
+/* ========== 专业 Footer 样式 ========== */
 .professional-footer :deep(.v-chip) {
   margin: 4px;
   font-weight: 500;
@@ -607,6 +668,7 @@ onUnmounted(() => {
 .gap-2 { gap: 8px; }
 .gap-4 { gap: 16px; }
 
+/* ========== 用户菜单交互优化 ========== */
 .user-avatar {
   transition: all 0.2s ease;
   border: 2px solid white;
