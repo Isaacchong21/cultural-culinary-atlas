@@ -335,7 +335,6 @@
     >
       <v-container fluid class="py-6">
         <v-row dense>
-          <!-- 品牌信息 & 操作按钮 -->
           <v-col cols="12" md="6" class="mb-4">
             <div class="d-flex align-center mb-3">
               <v-icon icon="mdi-earth" color="orange" size="24" class="mr-2" />
@@ -345,7 +344,6 @@
               Discover authentic recipes, share culinary journeys, and connect with food lovers worldwide.
             </p>
             <div class="d-flex align-center gap-4">
-              <!-- ✅ 仅保留返回顶部按钮 -->
               <v-btn 
                 variant="outlined" 
                 size="small" 
@@ -601,7 +599,6 @@ onUnmounted(() => {
   z-index: 1; 
 }
 
-/* ========== 专业 Footer 样式 ========== */
 .professional-footer :deep(.v-chip) {
   margin: 4px;
   font-weight: 500;
@@ -610,7 +607,6 @@ onUnmounted(() => {
 .gap-2 { gap: 8px; }
 .gap-4 { gap: 16px; }
 
-/* ========== 用户菜单交互优化 ========== */
 .user-avatar {
   transition: all 0.2s ease;
   border: 2px solid white;

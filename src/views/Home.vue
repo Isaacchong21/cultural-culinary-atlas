@@ -809,7 +809,7 @@ function fitAllMarkers() {
 }
 
 .marker-pin {
-  width: 55px;
+  width: 33px;
   height: 55px;
   background: #ffffff;
   border-radius: 50%;
