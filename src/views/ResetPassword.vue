@@ -25,38 +25,40 @@
               <p class="text-body-2 text-grey">for {{ email }}</p>
             </div>
 
-            <!-- 新密码 -->
             <div class="input-group mb-4">
               <label class="input-label">New Password</label>
               <div class="input-field-wrapper">
                 <v-icon class="input-icon" color="grey">mdi-key-variant</v-icon>
                 <v-text-field
                   v-model="newPassword"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   placeholder="Enter new password"
                   variant="outlined"
                   density="comfortable"
                   hide-details="auto"
                   class="custom-input"
                   :rules="[rules.required, rules.minLength, rules.complexity]"
+                  :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                  @click:append-inner="showPassword = !showPassword"
                 ></v-text-field>
               </div>
             </div>
 
-            <!-- 确认密码 -->
             <div class="input-group mb-4">
               <label class="input-label">Confirm Password</label>
               <div class="input-field-wrapper">
                 <v-icon class="input-icon" color="grey">mdi-check-circle</v-icon>
                 <v-text-field
                   v-model="confirmPassword"
-                  type="password"
+                  :type="showConfirmPassword ? 'text' : 'password'"
                   placeholder="Confirm your password"
                   variant="outlined"
                   density="comfortable"
                   hide-details="auto"
                   class="custom-input"
                   :rules="[rules.required, rules.match]"
+                  :append-inner-icon="showConfirmPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                  @click:append-inner="showConfirmPassword = !showConfirmPassword"
                 ></v-text-field>
               </div>
             </div>
@@ -96,6 +98,9 @@ const loading = ref(false)
 const verifying = ref(true)
 const error = ref("")
 
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
 const rules = {
   required: v => !!v || "Field is required",
   minLength: v => (v && v.length >= 8) || "At least 8 characters",
@@ -126,7 +131,6 @@ async function resetPassword() {
 
   loading.value = true
   try {
-    // ✅ 使用相对路径
     const res = await fetch('/api/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -138,7 +142,7 @@ async function resetPassword() {
     })
 
     if (res.ok) {
-      alert("✅ Password reset successfully! Please log in with your new password.")
+      alert("Password reset successfully! Please log in with your new password.")
       router.push('/login')
     } else {
       const data = await res.json()

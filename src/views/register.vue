@@ -1,10 +1,14 @@
 <template>
-  <v-container fluid class="pt-16 bg-grey-lighten-4">
+  <v-container fluid class="pt-16">
     <v-row class="h-100" justify="center" align="center">
-      <v-col cols="12" md="6" class="d-none d-md-flex flex-column justify-center align-center pa-8" style="background-color:#ff5722;">
+      <v-col 
+        cols="12" 
+        md="6" 
+        class="d-none d-md-flex flex-column justify-center align-center pa-8 hero-section"
+      >
         <div class="text-center">
           <v-icon size="120" color="white" class="mb-6">mdi-utensils</v-icon>
-          <h1 class="text-h2 font-weight-bold text-white mb-4">Food Voyage</h1>
+          <h1 class="text-h2 font-weight-bold text-white mb-4">Cultural Culinary Atlas</h1>
           <p class="text-h6 text-grey-lighten-3">Start your culinary journey and discover authentic global cuisine.</p>
         </div>
       </v-col>
@@ -143,7 +147,6 @@ const register = async () => {
     loading.value = true;
 
     try {
-      // ✅ 使用相对路径
       const res = await fetch('/api/register', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -169,3 +172,20 @@ const register = async () => {
   }
 };
 </script>
+
+<style scoped>
+.hero-section {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.85), rgba(211, 47, 47, 0.85)),
+              url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=800&fit=crop') 
+              center/cover no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section h1, 
+.hero-section p, 
+.hero-section .v-icon {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+</style>

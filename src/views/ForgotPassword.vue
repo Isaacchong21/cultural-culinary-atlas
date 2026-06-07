@@ -14,7 +14,7 @@
           </div>
 
           <v-alert v-if="sent" type="success" variant="tonal" class="mb-6" icon="mdi-check-circle">
-            ✅ Reset link sent to <strong>{{ email }}</strong><br>
+            Reset link sent to <strong>{{ email }}</strong><br>
             <span class="text-caption">Check your inbox (and spam folder)</span>
           </v-alert>
 
@@ -68,7 +68,9 @@
 
 <script setup>
 import { ref } from "vue"
+import { useRouter } from "vue-router"
 
+const router = useRouter()
 const email = ref("")
 const loading = ref(false)
 const sent = ref(false)
@@ -86,7 +88,6 @@ async function sendResetLink() {
   
   loading.value = true
   try {
-    // ✅ 使用相对路径
     const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -94,11 +95,24 @@ async function sendResetLink() {
     })
     
     if (res.ok) {
+      const data = await res.json()
       sent.value = true
-      alert(`🔗 Reset link sent to ${email.value}\n\n(Token for testing: xxx)`)
+
+      if (data.token) {
+        setTimeout(() => {
+          router.push({ 
+            path: '/reset-password', 
+            query: { token: data.token, email: data.email } 
+          })
+        }, 1500) 
+      } else {
+        setTimeout(() => {
+          sent.value = false
+        }, 3000)
+      }
     } else {
       const data = await res.json()
-      alert(`❌ ${data.error || 'Failed to send reset link'}`)
+      alert(`${data.error || 'Failed to send reset link'}`)
     }
   } catch (err) {
     console.error('Send reset link failed:', err)

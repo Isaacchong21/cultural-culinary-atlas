@@ -665,10 +665,16 @@ app.post("/api/login", async (req, res) => {
 
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
-    const { email} = req.body;
+    const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
     const user = await User.findOne({ email });
-    if (!user) return res.json({ message: 'If the email exists, a reset link has been sent' });
+    if (!user) {
+      return res.json({ 
+        message: 'If the email exists, a reset link has been sent',
+        token: null,
+        email: email 
+      });
+    }
     
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpiry = Date.now() + 60 * 60 * 1000;
@@ -676,9 +682,13 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     user.resetPasswordExpiry = resetTokenExpiry;
     await user.save();
 
-    const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-    console.log('Password reset link:', resetLink);
-    res.json({ message: 'If the email exists, a reset link has been sent'});
+    console.log('Password reset token generated for:', email);
+    
+    res.json({ 
+      message: 'If the email exists, a reset link has been sent',
+      token: resetToken, 
+      email: email
+    });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: 'Failed to process request' });
