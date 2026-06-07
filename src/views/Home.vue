@@ -494,10 +494,10 @@ onMounted(async () => {
           </div>
           
           <div class="popup-footer">
-            <a href="/country/${country.toLowerCase().replace(/\s+/g, '-')}" 
-               class="view-all-btn"
-               data-router-link
-               data-slug="${country.toLowerCase().replace(/\s+/g, '-')}"
+            <a href="/recipes?country=${encodeURIComponent(country)}" 
+              class="view-all-btn"
+              data-router-link
+              data-country="${country}"
             >
               View all ${count} recipes →
             </a>
@@ -566,9 +566,9 @@ onMounted(async () => {
             if (viewAllBtn) {
               clickEvent.preventDefault();
               clickEvent.stopPropagation();
-              const slug = viewAllBtn.dataset.slug;
-              if (slug) {
-                router.push(`/country/${slug}`);
+              const countryName = viewAllBtn.dataset.country;
+              if (countryName) {
+                router.push({ path: '/recipes', query: { country: countryName } });
               }
               return;
             }
