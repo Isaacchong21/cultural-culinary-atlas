@@ -18,7 +18,6 @@
     </section>
 
     <v-container class="py-8">
-      <!-- 简化统计栏 -->
       <v-row class="mb-6" v-if="!loading && countries.length > 0">
         <v-col cols="12" class="text-center">
           <v-chip variant="tonal" color="orange" size="small">
@@ -176,7 +175,7 @@ async function refreshCountriesData() {
       if (!map[recipe.country]) {
         map[recipe.country] = {
           name: recipe.country,
-          slug: recipe.country.toLowerCase().replace(/\s+/g, "-"),
+          slug: recipe.country.trim().toLowerCase().replace(/\s+/g, "-"),
           count: 0,
           image: "" 
         };

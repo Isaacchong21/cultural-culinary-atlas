@@ -86,7 +86,6 @@
           </template>
           
           <v-card class="notification-panel" role="region" aria-label="Notifications Panel">
-            <!-- ✅ 修改：添加了 Clear All 按钮 -->
             <v-card-title class="d-flex align-center justify-space-between pa-4 border-b">
               <span class="text-h6 font-weight-bold">Notifications</span>
               <div class="d-flex gap-2">
@@ -122,7 +121,6 @@
               </div>
               
               <v-list v-else class="py-0" max-height="400" style="overflow-y:auto;" role="list">
-                <!-- ✅ 修改：添加了单独删除按钮 -->
                 <v-list-item
                   v-for="notif in notifications"
                   :key="notif._id"
@@ -265,7 +263,6 @@
       </v-menu>
     </v-app-bar>
 
-    <!-- 侧边导航栏 -->
     <v-navigation-drawer 
       v-model="drawer" 
       :permanent="$vuetify.display.mdAndUp"
@@ -340,7 +337,6 @@
       </v-list>
     </v-navigation-drawer>
 
-    <!-- 主内容区 -->
     <v-main class="bg-grey-lighten-5 main-area" role="main" aria-label="Main Content Area">
       <v-container fluid class="pa-0 content-container">
         <router-view v-slot="{ Component }">
@@ -351,7 +347,6 @@
       </v-container>
     </v-main>
 
-    <!-- 专业版 Footer -->
     <v-footer 
       app 
       color="grey-lighten-4" 
@@ -465,7 +460,6 @@ const UserProfile = ref({
   avatar: getSafeAvatar()
 });
 
-// ✅ 新增：用于同步头像的函数
 function refreshUserProfile() {
   UserProfile.value = {
     name: localStorage.getItem("userName") || "Guest",
@@ -528,7 +522,6 @@ async function markAllAsRead() {
   }
 }
 
-// ✅ 新增：清空所有通知
 async function clearAllNotifications() {
   const userId = localStorage.getItem('userId');
   if (!userId) return;
@@ -538,7 +531,6 @@ async function clearAllNotifications() {
   } catch (err) { console.error('Failed to clear notifications', err); }
 }
 
-// ✅ 新增：删除单个通知
 async function deleteNotification(notifId) {
   try {
     const res = await fetch(`/api/notifications/${notifId}`, { method: 'DELETE' });
@@ -611,7 +603,6 @@ function logout() {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
-  // ✅ 监听头像更新事件
   window.addEventListener('user-profile-updated', refreshUserProfile); 
 
   if (window.innerWidth < 960) {
@@ -628,7 +619,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
-  // ✅ 移除头像更新监听
   window.removeEventListener('user-profile-updated', refreshUserProfile); 
   
   if (notificationInterval) clearInterval(notificationInterval);
@@ -636,7 +626,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ========== 全局布局 ========== */
 :deep(.v-application__wrap) {
   min-height: auto !important;
 }
@@ -659,7 +648,6 @@ onUnmounted(() => {
   z-index: 1; 
 }
 
-/* ========== 专业 Footer 样式 ========== */
 .professional-footer :deep(.v-chip) {
   margin: 4px;
   font-weight: 500;
@@ -668,7 +656,6 @@ onUnmounted(() => {
 .gap-2 { gap: 8px; }
 .gap-4 { gap: 16px; }
 
-/* ========== 用户菜单交互优化 ========== */
 .user-avatar {
   transition: all 0.2s ease;
   border: 2px solid white;

@@ -1,6 +1,5 @@
 <template>
   <v-container class="py-8 recipes-container">
-    <!-- Header -->
     <v-row justify="center" class="mb-8">
       <v-col cols="12" md="10" class="text-center">
         <h1 class="text-h3 font-weight-black mb-2 text-grey-darken-4">
